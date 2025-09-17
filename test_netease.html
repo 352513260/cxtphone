@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网易云音乐歌单导入测试</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>网易云音乐歌单导入功能测试</h1>
+        
+        <div class="test-section">
+            <h3>1. URL解析测试</h3>
+            <button class="test-button" onclick="testUrlParsing()">测试URL解析</button>
+            <div id="url-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>2. 歌单导入测试</h3>
+            <input type="text" id="playlist-url" placeholder="请输入网易云音乐歌单链接" 
+                   value="https://music.163.com/m/playlist?id=379607699&creatorId=276405398">
+            <br>
+            <button class="test-button" onclick="testPlaylistImport()">测试歌单导入</button>
+            <div id="import-result" class="result"></div>
+        </div>
+        
+        <div class="test-section">
+            <h3>3. 控制台日志</h3>
+            <button class="test-button" onclick="clearConsole()">清空控制台</button>
+            <div id="console-log" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        // 从网易云音乐URL中提取歌单ID
+        function extractNeteasePlaylistId(url) {
+            try {
+                const patterns = [
+                    /\/m\/playlist\?id=(\d+)/,
+                    /playlist\?id=(\d+)/,
+                    /playlist\/(\d+)/,
+                    /id=(\d+).*playlist/,
+                    /playlist.*id=(\d+)/
+                ];
+                
+                for (const pattern of patterns) {
+                    const match = url.match(pattern);
+                    if (match) {
+                        console.log(`成功解析歌单ID: ${match[1]}, 使用模式: ${pattern}`);
+                        return match[1];
+                    }
+                }
+                
+                console.error('无法解析歌单ID，URL格式:', url);
+                return null;
+            } catch (error) {
+                console.error('解析歌单ID失败:', error);
+                return null;
+            }
+        }
+
+        // 获取网易云音乐歌单详情
+        async function fetchNeteasePlaylist(playlistId) {
+            try {
+                console.log(`正在获取歌单ID: ${playlistId} 的详情...`);
+                
+                const proxyUrls = [
+                    'https://api.allorigins.win/raw?url=',
+                    'https://cors-anywhere.herokuapp.com/',
+                    'https://api.codetabs.com/v1/proxy?quest=',
+                    'https://thingproxy.freeboard.io/fetch/'
+                ];
+                
+                const apiEndpoints = [
+                    `https://music.163.com/api/playlist/detail?id=${playlistId}`,
+                    `https://music.163.com/weapi/v3/playlist/detail?id=${playlistId}`,
+                    `https://music.163.com/api/v3/playlist/detail?id=${playlistId}`
+                ];
+                
+                for (const apiUrl of apiEndpoints) {
+                    console.log(`尝试API端点: ${apiUrl}`);
+                    
+                    for (let i = 0; i < proxyUrls.length; i++) {
+                        try {
+                            const proxyUrl = proxyUrls[i];
+                            const fullUrl = proxyUrl + encodeURIComponent(apiUrl);
+                            
+                            console.log(`尝试代理服务器 ${i + 1}: ${proxyUrl}`);
+                            
+                            const response = await fetch(fullUrl, {
+                                method: 'GET',
+                                headers: {
+                                    'Accept': 'application/json, text/plain, */*',
+                                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+                                    'Referer': 'https://music.163.com/',
+                                    'Origin': 'https://music.163.com'
+                                }
+                            });
+                            
+                            if (response.ok) {
+                                const data = await response.json();
+                                console.log('API响应数据:', data);
+                                
+                                if (data && data.result) {
+                                    console.log(`成功获取歌单信息，包含 ${data.result.tracks ? data.result.tracks.length : 0} 首歌曲`);
+                                    return data.result;
+                                } else if (data && data.playlist) {
+                                    console.log(`成功获取歌单信息（备用格式），包含 ${data.playlist.tracks ? data.playlist.tracks.length : 0} 首歌曲`);
+                                    return data.playlist;
+                                }
+                            } else {
+                                console.log(`代理服务器 ${i + 1} 返回状态: ${response.status}`);
+                            }
+                        } catch (proxyError) {
+                            console.log(`代理服务器 ${i + 1} 失败:`, proxyError.message);
+                            continue;
+                        }
+                    }
+                }
+                
+                throw new Error('所有API调用方式都失败了');
+                
+            } catch (error) {
+                console.error('获取歌单详情失败:', error);
+                throw error;
+            }
+        }
+
+        // 测试URL解析功能
+        function testUrlParsing() {
+            const testUrls = [
+                'https://music.163.com/m/playlist?id=379607699&creatorId=276405398',
+                'https://music.163.com/playlist?id=379607699',
+                'https://music.163.com/playlist/379607699',
+                'music.163.com/playlist?id=379607699'
+            ];
+            
+            let result = '=== 测试URL解析功能 ===\n';
+            testUrls.forEach((url, index) => {
+                const playlistId = extractNeteasePlaylistId(url);
+                result += `测试 ${index + 1}: ${url}\n`;
+                result += `解析结果: ${playlistId ? `成功 - ID: ${playlistId}` : '失败'}\n`;
+                result += '---\n';
+            });
+            
+            document.getElementById('url-result').textContent = result;
+            document.getElementById('url-result').className = 'result success';
+        }
+
+        // 测试歌单导入功能
+        async function testPlaylistImport() {
+            const url = document.getElementById('playlist-url').value;
+            const resultDiv = document.getElementById('import-result');
+            
+            try {
+                resultDiv.textContent = '正在测试歌单导入...';
+                resultDiv.className = 'result';
+                
+                const playlistId = extractNeteasePlaylistId(url);
+                if (!playlistId) {
+                    throw new Error('无法解析歌单ID');
+                }
+                
+                const playlistData = await fetchNeteasePlaylist(playlistId);
+                if (!playlistData || !playlistData.tracks) {
+                    throw new Error('无法获取歌单数据');
+                }
+                
+                let result = `歌单导入测试成功！\n`;
+                result += `歌单ID: ${playlistId}\n`;
+                result += `歌曲数量: ${playlistData.tracks.length}\n`;
+                result += `歌单名称: ${playlistData.name || '未知'}\n`;
+                result += `创建者: ${playlistData.creator ? playlistData.creator.nickname : '未知'}\n\n`;
+                result += `前5首歌曲:\n`;
+                
+                for (let i = 0; i < Math.min(5, playlistData.tracks.length); i++) {
+                    const track = playlistData.tracks[i];
+                    result += `${i + 1}. ${track.name} - ${track.ar ? track.ar.map(ar => ar.name).join(', ') : '未知歌手'}\n`;
+                }
+                
+                resultDiv.textContent = result;
+                resultDiv.className = 'result success';
+                
+            } catch (error) {
+                resultDiv.textContent = `测试失败: ${error.message}`;
+                resultDiv.className = 'result error';
+            }
+        }
+
+        // 清空控制台
+        function clearConsole() {
+            document.getElementById('console-log').textContent = '';
+        }
+
+        // 重写console.log来显示在页面上
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            originalLog.apply(console, args);
+            const logDiv = document.getElementById('console-log');
+            logDiv.textContent += args.join(' ') + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+        
+        console.error = function(...args) {
+            originalError.apply(console, args);
+            const logDiv = document.getElementById('console-log');
+            logDiv.textContent += 'ERROR: ' + args.join(' ') + '\n';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        };
+
+        // 页面加载时自动运行URL解析测试
+        window.onload = function() {
+            testUrlParsing();
+        };
+    </script>
+</body>
+</html>

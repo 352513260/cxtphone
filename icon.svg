@@ -1,0 +1,33 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#007bff;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0056b3;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- 背景圆形 -->
+  <circle cx="256" cy="256" r="240" fill="url(#grad1)" stroke="#ffffff" stroke-width="8"/>
+  
+  <!-- 聊天气泡 -->
+  <rect x="120" y="180" width="200" height="120" rx="20" ry="20" fill="#ffffff" opacity="0.9"/>
+  <polygon points="140,300 180,300 160,320" fill="#ffffff" opacity="0.9"/>
+  
+  <!-- 消息线条 -->
+  <rect x="140" y="200" width="120" height="8" rx="4" fill="#007bff"/>
+  <rect x="140" y="220" width="80" height="8" rx="4" fill="#6c757d"/>
+  <rect x="140" y="240" width="100" height="8" rx="4" fill="#6c757d"/>
+  
+  <!-- 另一个聊天气泡 -->
+  <rect x="200" y="220" width="100" height="60" rx="15" ry="15" fill="#007bff"/>
+  <polygon points="280,280 320,280 300,300" fill="#007bff"/>
+  
+  <!-- 消息线条 -->
+  <rect x="220" y="240" width="60" height="6" rx="3" fill="#ffffff"/>
+  <rect x="220" y="255" width="40" height="6" rx="3" fill="#ffffff"/>
+  
+  <!-- 装饰性元素 -->
+  <circle cx="100" cy="100" r="8" fill="#ffffff" opacity="0.6"/>
+  <circle cx="400" cy="120" r="6" fill="#ffffff" opacity="0.4"/>
+  <circle cx="380" cy="380" r="10" fill="#ffffff" opacity="0.5"/>
+</svg>
