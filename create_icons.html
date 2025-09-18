@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>创建PWA图标</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #007bff;
+            text-align: center;
+        }
+        .icon-preview {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        canvas {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin: 10px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .instructions {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎨 PWA图标生成器</h1>
+        
+        <div class="instructions">
+            <strong>说明：</strong>点击下面的按钮生成并下载PWA所需的图标文件。
+            请确保将下载的文件放在与index.html相同的目录中。
+        </div>
+        
+        <div class="icon-preview" id="preview"></div>
+        
+        <div style="text-align: center;">
+            <button onclick="generateAllIcons()">生成所有图标</button>
+            <button onclick="generateSingleIcon(192)">生成192x192</button>
+            <button onclick="generateSingleIcon(512)">生成512x512</button>
+        </div>
+    </div>
+
+    <script>
+        function createIcon(size) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            
+            // 创建图片对象
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            
+            return new Promise((resolve) => {
+                img.onload = () => {
+                    // 绘制图片到画布
+                    ctx.drawImage(img, 0, 0, size, size);
+                    resolve(canvas);
+                };
+                
+                img.onerror = () => {
+                    // 如果图片加载失败，绘制默认图标
+                    const gradient = ctx.createLinearGradient(0, 0, size, size);
+                    gradient.addColorStop(0, '#007bff');
+                    gradient.addColorStop(1, '#0056b3');
+                    
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(size/2, size/2, size/2 - 4, 0, 2 * Math.PI);
+                    ctx.fill();
+                    
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 4;
+                    ctx.stroke();
+                    
+                    resolve(canvas);
+                };
+                
+                // 加载您的图片
+                img.src = 'https://i.postimg.cc/28p9L8FY/sogou20250606-073214826037-png.png';
+            });
+        }
+        
+        function downloadIcon(canvas, filename) {
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+        
+        async function generateSingleIcon(size) {
+            const canvas = await createIcon(size);
+            const filename = `icon-${size}x${size}.png`;
+            downloadIcon(canvas, filename);
+            
+            // 显示预览
+            const preview = document.getElementById('preview');
+            preview.innerHTML = '';
+            const previewCanvas = await createIcon(Math.min(size, 200));
+            preview.appendChild(previewCanvas);
+        }
+        
+        async function generateAllIcons() {
+            const sizes = [192, 512];
+            for (let i = 0; i < sizes.length; i++) {
+                await generateSingleIcon(sizes[i]);
+                if (i < sizes.length - 1) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                }
+            }
+        }
+        
+        // 页面加载时显示预览
+        window.addEventListener('load', async () => {
+            await generateSingleIcon(192);
+        });
+    </script>
+</body>
+</html>

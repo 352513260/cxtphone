@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA测试页面</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #007bff;
+            text-align: center;
+        }
+        .test-item {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .test-item h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .status.pass {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .install-btn {
+            background: #28a745;
+            font-size: 18px;
+            padding: 15px 30px;
+        }
+        .install-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 PWA功能测试</h1>
+        
+        <div class="test-item">
+            <h3>1. HTTPS协议检查</h3>
+            <span id="https-status">检查中...</span>
+        </div>
+        
+        <div class="test-item">
+            <h3>2. Manifest文件检查</h3>
+            <span id="manifest-status">检查中...</span>
+        </div>
+        
+        <div class="test-item">
+            <h3>3. Service Worker检查</h3>
+            <span id="sw-status">检查中...</span>
+        </div>
+        
+        <div class="test-item">
+            <h3>4. 图标文件检查</h3>
+            <span id="icon-status">检查中...</span>
+        </div>
+        
+        <div class="test-item">
+            <h3>5. 安装提示检查</h3>
+            <span id="install-status">检查中...</span>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <button class="install-btn" id="install-btn" style="display: none;">📱 安装应用</button>
+            <button onclick="location.href='index.html'">返回主应用</button>
+        </div>
+        
+        <div class="test-item">
+            <h3>调试信息</h3>
+            <pre id="debug-info" style="background: #f8f9fa; padding: 10px; border-radius: 4px; font-size: 12px; overflow-x: auto;"></pre>
+        </div>
+    </div>
+
+    <script>
+        let deferredPrompt;
+        const debugInfo = document.getElementById('debug-info');
+        
+        function log(message) {
+            console.log(message);
+            debugInfo.textContent += message + '\n';
+        }
+        
+        function setStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${status}`;
+        }
+        
+        // 检查HTTPS
+        function checkHTTPS() {
+            const isHTTPS = location.protocol === 'https:' || location.hostname === 'localhost';
+            if (isHTTPS) {
+                setStatus('https-status', 'pass', '✅ 通过');
+            } else {
+                setStatus('https-status', 'fail', '❌ 失败 - 需要HTTPS');
+            }
+            log(`HTTPS检查: ${isHTTPS ? '通过' : '失败'}`);
+        }
+        
+        // 检查Manifest
+        async function checkManifest() {
+            try {
+                const response = await fetch('./manifest.json');
+                if (response.ok) {
+                    const manifest = await response.json();
+                    setStatus('manifest-status', 'pass', '✅ 通过');
+                    log(`Manifest检查: 通过 - ${manifest.name}`);
+                } else {
+                    setStatus('manifest-status', 'fail', '❌ 失败 - 无法加载');
+                }
+            } catch (error) {
+                setStatus('manifest-status', 'fail', '❌ 失败 - ' + error.message);
+                log(`Manifest检查: 失败 - ${error.message}`);
+            }
+        }
+        
+        // 检查Service Worker
+        async function checkServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                try {
+                    const registration = await navigator.serviceWorker.register('./sw.js');
+                    setStatus('sw-status', 'pass', '✅ 已注册');
+                    log(`Service Worker检查: 已注册`);
+                } catch (error) {
+                    setStatus('sw-status', 'fail', '❌ 注册失败');
+                    log(`Service Worker检查: 注册失败 - ${error.message}`);
+                }
+            } else {
+                setStatus('sw-status', 'fail', '❌ 不支持');
+                log(`Service Worker检查: 浏览器不支持`);
+            }
+        }
+        
+        // 检查图标
+        async function checkIcons() {
+            const iconUrl = 'https://i.postimg.cc/28p9L8FY/sogou20250606-073214826037-png.png';
+            let passed = 0;
+            
+            try {
+                const response = await fetch(iconUrl);
+                if (response.ok) {
+                    passed = 1;
+                    setStatus('icon-status', 'pass', '✅ 图标加载成功');
+                } else {
+                    setStatus('icon-status', 'fail', '❌ 图标加载失败');
+                }
+            } catch (error) {
+                setStatus('icon-status', 'fail', '❌ 图标加载失败');
+                log(`图标检查: 加载失败 - ${error.message}`);
+            }
+            
+            log(`图标检查: ${passed}/1 个图标可用`);
+        }
+        
+        // 检查安装提示
+        function checkInstallPrompt() {
+            if (deferredPrompt) {
+                setStatus('install-status', 'pass', '✅ 可用');
+                document.getElementById('install-btn').style.display = 'inline-block';
+            } else {
+                setStatus('install-status', 'warning', '⚠️ 不可用');
+            }
+            log(`安装提示检查: ${deferredPrompt ? '可用' : '不可用'}`);
+        }
+        
+        // 安装应用
+        async function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                log(`安装结果: ${outcome}`);
+                deferredPrompt = null;
+                document.getElementById('install-btn').style.display = 'none';
+            }
+        }
+        
+        // 监听安装提示
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            checkInstallPrompt();
+            log('beforeinstallprompt 事件触发');
+        });
+        
+        // 监听安装完成
+        window.addEventListener('appinstalled', () => {
+            log('应用已安装');
+            setStatus('install-status', 'pass', '✅ 已安装');
+        });
+        
+        // 页面加载完成后执行检查
+        window.addEventListener('load', () => {
+            log('开始PWA功能检查...');
+            checkHTTPS();
+            checkManifest();
+            checkServiceWorker();
+            checkIcons();
+            checkInstallPrompt();
+            log('检查完成');
+        });
+        
+        // 绑定安装按钮
+        document.getElementById('install-btn').addEventListener('click', installApp);
+    </script>
+</body>
+</html>

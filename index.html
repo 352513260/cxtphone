@@ -1,65 +1,88 @@
+
+
 <!DOCTYPE html>
+<!-- 
+=== 版本更新指南 ===
+每次更新时请修改以下位置的版本号：
+1. 第10行：app-version meta标签
+2. 第14行：manifest.json版本参数  
+3. 第45-46行：外部脚本版本参数
+4. 第53行：Service Worker版本参数
+-->
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title>EPhone - 智能聊天应用</title>
     
+    <!-- 版本控制：每次更新时修改此版本号 -->
+    <meta name="app-version" content="v1.5.0">
+    
     <!-- ▼▼▼ PWA全屏配置 ▼▼▼ -->
     <!-- 1. PWA Manifest文件 -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json?v=1.5.0">
     
     <!-- 2. 苹果设备全屏支持 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="EPhone">
     
     <!-- 3. 安卓设备全屏支持 -->
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#007bff">
+    <meta name="theme-color" content="#ffffff">
     
     <!-- 4. 应用图标配置 -->
-    <link rel="icon" type="image/svg+xml" href="icon.svg">
-    <link rel="icon" type="image/png" sizes="32x32" href="icon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="icon-16x16.png">
-    <link rel="apple-touch-icon" sizes="180x180" href="icon-180x180.png">
-    <link rel="apple-touch-icon" sizes="152x152" href="icon-152x152.png">
-    <link rel="apple-touch-icon" sizes="144x144" href="icon-144x144.png">
-    <link rel="apple-touch-icon" sizes="120x120" href="icon-120x120.png">
-    <link rel="apple-touch-icon" sizes="114x114" href="icon-114x114.png">
-    <link rel="apple-touch-icon" sizes="76x76" href="icon-76x76.png">
-    <link rel="apple-touch-icon" sizes="72x72" href="icon-72x72.png">
-    <link rel="apple-touch-icon" sizes="60x60" href="icon-60x60.png">
-    <link rel="apple-touch-icon" sizes="57x57" href="icon-57x57.png">
-    <link rel="apple-touch-icon" sizes="29x29" href="icon-29x29.png">
-    <link rel="apple-touch-icon" href="icon-180x180.png">
-    <meta name="msapplication-TileImage" content="icon-144x144.png">
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/28p9L8FY/sogou20250606-073214826037-png.png">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/28p9L8FY/sogou20250606-073214826037-png.png">
+    <meta name="msapplication-TileImage" content="https://i.postimg.cc/28p9L8FY/sogou20250606-073214826037-png.png">
     <meta name="msapplication-TileColor" content="#007bff">
     
     <!-- 5. 防止缩放和选择 -->
     <meta name="format-detection" content="telephone=no">
     <meta name="msapplication-tap-highlight" content="no">
     <!-- ▲▲▲ PWA配置结束 ▲▲▲ -->
-    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- 版本号：v1.5.0 - 每次更新时请修改此版本号 -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js?v=1.5.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js?v=1.5.0"></script>
     
     <!-- PWA Service Worker 注册 -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
+                navigator.serviceWorker.register('./sw.js?v=1.5.0')
                     .then((registration) => {
                         console.log('SW registered: ', registration);
                     })
                     .catch((registrationError) => {
                         console.log('SW registration failed: ', registrationError);
-                });
+                    });
             });
         }
         
         // PWA安装提示
         let deferredPrompt;
         let installButton;
+        
+        // PWA安装检测和调试
+        function checkPWAInstallability() {
+            console.log('=== PWA安装检测 ===');
+            console.log('Service Worker支持:', 'serviceWorker' in navigator);
+            console.log('当前协议:', location.protocol);
+            console.log('是否为HTTPS:', location.protocol === 'https:');
+            console.log('Manifest链接:', document.querySelector('link[rel="manifest"]')?.href);
+            
+            // 检查manifest
+            fetch('./manifest.json')
+                .then(response => response.json())
+                .then(manifest => {
+                    console.log('Manifest内容:', manifest);
+                    console.log('应用名称:', manifest.name);
+                    console.log('图标数量:', manifest.icons?.length || 0);
+                })
+                .catch(error => {
+                    console.error('Manifest加载失败:', error);
+                });
+        }
         
         window.addEventListener('beforeinstallprompt', (e) => {
             console.log('PWA: 安装提示可用');
@@ -141,6 +164,69 @@
             }, 10000);
         }
         
+        // 手动安装提示
+        function showManualInstallPrompt() {
+            const installPrompt = document.createElement('div');
+            installPrompt.innerHTML = `
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <h3 style="margin: 0 0 10px 0; color: #333;">📱 安装EPhone到桌面</h3>
+                    <p style="margin: 0; color: #666; font-size: 14px;">请按照以下步骤安装应用：</p>
+                </div>
+                <div style="text-align: left; font-size: 14px; line-height: 1.6;">
+                    <p><strong>Chrome/Edge:</strong></p>
+                    <p>1. 点击地址栏右侧的安装图标 📱</p>
+                    <p>2. 或点击菜单 → 安装应用</p>
+                    <br>
+                    <p><strong>Firefox:</strong></p>
+                    <p>1. 点击地址栏右侧的安装图标</p>
+                    <p>2. 或点击菜单 → 安装</p>
+                    <br>
+                    <p><strong>Safari (iOS):</strong></p>
+                    <p>1. 点击分享按钮</p>
+                    <p>2. 选择"添加到主屏幕"</p>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="this.parentElement.parentElement.remove()" style="
+                        background: #6c757d; color: white; border: none; 
+                        padding: 8px 16px; border-radius: 4px; cursor: pointer;
+                    ">知道了</button>
+                </div>
+            `;
+            installPrompt.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                z-index: 10000;
+                background: white;
+                padding: 25px;
+                border-radius: 15px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+                max-width: 400px;
+                width: 90%;
+                font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            `;
+            
+            // 添加背景遮罩
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 9999;
+            `;
+            overlay.onclick = () => {
+                overlay.remove();
+                installPrompt.remove();
+            };
+            
+            document.body.appendChild(overlay);
+            document.body.appendChild(installPrompt);
+        }
+        
         function showInstallSuccessMessage() {
             const successMsg = document.createElement('div');
             successMsg.innerHTML = '✅ 应用已成功安装到桌面！';
@@ -212,36 +298,43 @@
             }
         }
         
-        // 手机浏览器全屏适配 - 避免导航条遮挡
-        function adaptMobileFullscreen() {
-            const phoneScreen = document.getElementById('phone-screen');
-            if (phoneScreen) {
-                // 使用100%而不是100vh，避免导航条遮挡
-                phoneScreen.style.width = '100%';
-                phoneScreen.style.height = '100%';
-                
-                // 确保内容区域不会被导航条遮挡
-                const chatInputArea = document.getElementById('chat-input-area');
-                if (chatInputArea) {
-                    // 为底部输入区域添加安全边距
-                    chatInputArea.style.paddingBottom = 'env(safe-area-inset-bottom, 0px)';
+        // 版本更新检查
+        function checkForUpdates() {
+            const currentVersion = document.querySelector('meta[name="app-version"]').getAttribute('content');
+            const storedVersion = localStorage.getItem('app-version');
+            
+            if (storedVersion && storedVersion !== currentVersion) {
+                console.log('检测到新版本，清除缓存并重新加载');
+                // 清除所有缓存
+                if ('caches' in window) {
+                    caches.keys().then(function(names) {
+                        for (let name of names) {
+                            caches.delete(name);
+                        }
+                    });
                 }
-                
-                console.log('已应用手机浏览器全屏适配');
-                console.log('视口尺寸:', window.innerWidth + 'x' + window.innerHeight);
-                console.log('元素尺寸:', phoneScreen.offsetWidth + 'x' + phoneScreen.offsetHeight);
+                // 清除localStorage中的旧数据
+                localStorage.clear();
+                // 重新加载页面
+                window.location.reload(true);
+            } else {
+                // 保存当前版本
+                localStorage.setItem('app-version', currentVersion);
             }
         }
         
+        
+        
         // 监听窗口大小变化
         function handleResize() {
-            adaptMobileFullscreen();
             checkFullscreenMode();
         }
         
         window.addEventListener('load', () => {
-            adaptMobileFullscreen();
             checkFullscreenMode();
+            checkForUpdates();
+            checkPWAInstallability();
+            
         });
         window.addEventListener('resize', handleResize);
         window.addEventListener('orientationchange', handleResize);
@@ -262,31 +355,40 @@
             padding: 0;
         }
         
-        /* 2. 设置 body 为全屏画布 - 手机浏览器适配 */
+        /* 2. 设置 body 为全屏画布 - iOS全屏适配 */
         body {
             margin: 0;
             padding: 0;
             font-family: 'bulangni', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             font-weight: normal;
-            background-color: #f0f2f5;
-            height: 100%;
+            background-color: #ffffff;
+            height: 100vh;
+            min-height: 100vh;
+            min-height: -webkit-fill-available; /* Safari支持 */
             overflow: hidden;
             position: relative;
-            /* 手机浏览器优化 */
+            /* iOS全屏优化 */
             -webkit-user-select: none;
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
             -webkit-touch-callout: none;
             -webkit-tap-highlight-color: transparent;
+            /* 确保在iOS上填满整个屏幕，但避开状态栏 */
+            width: 100vw;
+            max-width: 100vw;
+            /* 添加顶部安全区域支持 */
+            padding-top: env(safe-area-inset-top);
         }
         
         /* --- Start of Replacement Code --- */
         
         #phone-screen {
-            /* 手机浏览器全屏适配 - 避免导航条遮挡 */
-            width: 100%;
-            height: 100%;
+            /* iOS全屏适配 - 解决底部空白问题 */
+            width: 100vw;
+            height: calc(100vh - env(safe-area-inset-top));
+            min-height: calc(100vh - env(safe-area-inset-top));
+            min-height: calc(-webkit-fill-available - env(safe-area-inset-top)); /* Safari支持 */
             position: relative;
             overflow: hidden;
             display: flex;
@@ -295,6 +397,9 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            /* 确保在iOS上完全填满屏幕，但避开状态栏 */
+            max-width: 100vw;
+            max-height: calc(100vh - env(safe-area-inset-top));
         }
         
         /* PWA全屏模式优化 - 由于已使用viewport单位，这里主要处理特殊样式 */
@@ -308,7 +413,7 @@
         /* 全屏模式下的状态栏适配 */
         .fullscreen-mode .status-bar,
         .standalone-mode .status-bar {
-            padding-top: env(safe-area-inset-top);
+            padding-top: 0; /* 状态栏现在在安全区域内 */
         }
         
         /* 全屏模式下的底部安全区域适配 */
@@ -359,23 +464,89 @@
             overflow: hidden;
         }
         
-        /* 手机浏览器全屏优化 */
+        /* iOS全屏优化 - 解决底部空白问题 */
         @media screen and (max-width: 768px) {
-            #phone-screen {
-                /* 在手机设备上确保完全填满屏幕 */
+            html, body {
+                height: 100vh;
                 min-height: 100vh;
                 min-height: -webkit-fill-available; /* Safari 支持 */
+                width: 100vw;
+                max-width: 100vw;
+                overflow: hidden;
+                /* 确保在移动设备上正确处理安全区域 */
+                padding-top: env(safe-area-inset-top);
             }
             
-            /* 确保聊天消息区域在手机上有足够空间 */
+            #phone-screen {
+                /* 在iOS设备上确保完全填满屏幕，但避开状态栏 */
+                width: 100vw;
+                height: calc(100vh - env(safe-area-inset-top));
+                min-height: calc(100vh - env(safe-area-inset-top));
+                min-height: calc(-webkit-fill-available - env(safe-area-inset-top)); /* Safari 支持 */
+                max-width: 100vw;
+                max-height: calc(100vh - env(safe-area-inset-top));
+            }
+            
+            /* 确保聊天消息区域在iOS上有足够空间 */
             #chat-messages {
-                height: calc(100vh - 140px); /* 为输入区域留出空间 */
-                height: calc(-webkit-fill-available - 140px); /* Safari 支持 */
+                height: calc(100vh - 140px - env(safe-area-inset-top)); /* 为输入区域和安全区域留出空间 */
+                height: calc(-webkit-fill-available - 140px - env(safe-area-inset-top)); /* Safari 支持 */
             }
             
-            /* 手机浏览器底部安全区域 */
+            /* iOS底部安全区域适配 */
             #chat-input-area {
                 padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
+            }
+            
+            /* 确保所有屏幕在iOS上都是全屏 */
+            .screen {
+                width: 100vw;
+                height: 100vh;
+                min-height: 100vh;
+                min-height: -webkit-fill-available;
+                max-width: 100vw;
+                max-height: 100vh;
+            }
+        }
+        
+        /* iOS Safari特殊处理 */
+        @supports (-webkit-touch-callout: none) {
+            html, body {
+                height: -webkit-fill-available;
+                min-height: -webkit-fill-available;
+            }
+            
+            #phone-screen {
+                height: -webkit-fill-available;
+                min-height: -webkit-fill-available;
+                max-height: -webkit-fill-available;
+            }
+            
+            .screen {
+                height: -webkit-fill-available;
+                min-height: -webkit-fill-available;
+                max-height: -webkit-fill-available;
+            }
+        }
+        
+        /* 额外的iOS全屏修复 */
+        @media screen and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) {
+            html, body {
+                height: 100vh;
+                min-height: 100vh;
+                min-height: -webkit-fill-available;
+                overflow: hidden;
+            }
+            
+            #phone-screen {
+                height: 100vh;
+                min-height: 100vh;
+                min-height: -webkit-fill-available;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
             }
         }
         
@@ -429,8 +600,7 @@
             z-index: 15;
             flex-shrink: 0;
             padding: 15px 20px;
-            /* 核心：使用 calc() 自动加上顶部的安全距离 */
-            padding-top: calc(15px + env(safe-area-inset-top)); 
+            /* 由于body已经有padding-top，这里不需要再加安全距离 */
             background-color: rgba(247, 247, 247, 0.8);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -456,7 +626,7 @@
         @keyframes charge-breath { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         .screen { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; flex-direction: column; overflow: hidden; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
         .screen.active { opacity: 1; visibility: visible; z-index: 1; }
-        .header { position: relative; z-index: 15; flex-shrink: 0; padding: 15px 20px; padding-top: 45px; background-color: rgba(247, 247, 247, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 600; }
+        .header { position: relative; z-index: 15; flex-shrink: 0; padding: 15px 20px; background-color: rgba(247, 247, 247, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 600; }
         .header .header-actions { display: flex; align-items: center; gap: 15px; }
         .header .back-btn, .header .action-btn { font-size: 24px; cursor: pointer; width: 30px; text-align: center; color: var(--accent-color); display: flex; align-items: center; justify-content: center; }
         
@@ -471,47 +641,20 @@
         
         /* --- Start of Replacement Code --- */
         
-        #home-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-            align-items: center;
-            box-sizing: border-box;
-            background-size: cover;
-            background-position: center;
-            padding-left: 20px;
-            padding-right: 20px;
-            /* We remove vertical padding here to rely on margins */
-        }
         
-        #clock-container {
-            text-align: center;
-            color: white;
-            text-shadow: 0 3px 8px rgba(0,0,0,0.4);
-            margin-bottom: 20px;
-            flex-shrink: 0;
-            /* This is the key: pushes the clock down from the top edge */
-            margin-top: calc(60px + env(safe-area-inset-top));
-        }
         
         /* --- End of Replacement Code --- */
         
-        /* 3. 将App图标网格作为一个整体，用 margin 从屏幕底部推上来 */
-        #app-grid {
-            margin-top: auto; /* 自动贴紧底部 */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 20px;
-            width: 100%;
-            padding: 20px;
-            /* 关键：使用 margin-bottom 抬高图标，适配底部“小黑条” */
-            margin-bottom: calc(30px + env(safe-area-inset-bottom)); 
-        }
         /* ▲▲▲ 替换结束 ▲▲▲ */
+        
+        /* 主屏幕背景样式 */
+        #home-screen {
+            background-image: linear-gradient(135deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0));
+        }
+        
         #main-time {
             font-size: 88px; /* 推荐：稍微调大一点点，更接近iOS锁屏的感觉 */
-            font-weight: 600; /* 核心修改1：将字体从“纤细(200)”改为“粗体(600)”，这是最关键的一步 */
+            font-weight: 600; /* 核心修改1：将字体从"纤细(200)"改为"粗体(600)"，这是最关键的一步 */
             letter-spacing: -2px; /* 推荐：稍微收紧字间距，让数字看起来更紧凑 */
             /* 核心修改2：指定字体，优先使用苹果系统字体 */
             font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", Arial, sans-serif;
@@ -1013,7 +1156,6 @@
             z-index: 10; /* z-index 保持，或者可以更高 */
             flex-shrink: 0; /* 防止被压缩 */
             padding: 15px 20px;
-            padding-top: 45px;
             background-color: rgba(247, 247, 247, 0.7); 
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -4369,20 +4511,20 @@
             transform: translateY(0);
         }
         
-        .music-player-window { 
-            width: 70%; 
+        .music-player-window {
+            width: 89%;
             min-height: 420px;
-            background-color: rgba(255, 255, 255, 0.6); 
-            backdrop-filter: blur(20px); 
-            -webkit-backdrop-filter: blur(20px); 
-            border-radius: 25px; 
-            box-shadow: 0 8px 32px 0 rgba(25, 25, 25, 0.37); 
-            border: 1px solid rgba(255, 255, 255, 0.18); 
-            padding: 25px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            color: #1f1f1f; 
+            background-color: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: 0 8px 32px 0 rgba(25, 25, 25, 0.37);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #1f1f1f;
             position: relative;
             justify-content: space-between;
             padding-bottom: 15px;
@@ -6537,7 +6679,7 @@
 /* --- 2. 【最终修复】重新定义主屏幕布局 --- */
 
 #home-screen {
-    background: linear-gradient(135deg, #6DD5FA, #2980B9);
+    background: linear-gradient(135deg, #f1f5f600, #f0f3f500);
     /* ▼▼▼ 核心修复：添加下面这两行 ▼▼▼ */
     background-size: cover;
     background-position: center;
@@ -6548,7 +6690,7 @@
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
-    justify-content: space-between; 
+    justify-content: space-between;
     align-items: center;
     height: 100%;
 }
@@ -7013,7 +7155,7 @@
 #single-lyric-display {
     /* 1. 尺寸与定位 */
     height: 40px;          /* 给一个固定的高度，防止文字换行时布局跳动 */
-    line-height: 40px;     /* 垂直居中 */
+    line-height: 35px;     /* 垂直居中 */
     width: 100%;           /* 宽度撑满 */
     margin-top: 15px;      /* 和上方的唱片拉开一些距离 */
     
@@ -7302,6 +7444,18 @@
                     <label for="block-cooldown-input" style="margin-bottom: 0;"> AI被拉黑后冷静期 (小时) <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 被拉黑超过这个时间后，AI才有几率重新申请好友。 </p>
                     </label>
                     <input type="number" id="block-cooldown-input" min="0.1" step="0.1" value="1" style="width: 80px; text-align: center;">
+                </div>
+                <!-- 【全新功能】后台活动角色选择 -->
+                <div class="form-group" style="margin-top: 20px;">
+                    <label for="background-characters-select" style="margin-bottom: 10px;"> 选择参与后台活动的角色 <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 只有被选中的角色才会参与后台活动，可以节省API费用。 </p>
+                    </label>
+                    <div id="background-characters-container" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; border-radius: 6px; padding: 10px; background-color: #f9f9f9;">
+                        <!-- 角色列表将在这里动态生成 -->
+                    </div>
+                    <div style="margin-top: 10px; display: flex; gap: 10px;">
+                        <button id="select-all-characters-btn" class="form-button-secondary" style="padding: 8px 16px; font-size: 12px;">全选</button>
+                        <button id="deselect-all-characters-btn" class="form-button-secondary" style="padding: 8px 16px; font-size: 12px;">全不选</button>
+                    </div>
                 </div>
                 <!-- 保存与导入导出 -->
                 <hr style="margin: 30px 0; opacity: 0.3;">
@@ -7790,7 +7944,9 @@
                 <!-- 【【【这就是补上的、缺失的全局CSS输入框！】】】 -->
                 <hr style="width: 80%; opacity: 0.3; margin: 30px 0;">
                 <div class="form-group" style="width:100%;">
-                    <label for="global-css-input"> 全局美化样式 (CSS) <button id="reset-global-css-btn" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button>
+                    <label for="global-css-input"> 全局美化样式 (CSS) 
+                        <button id="reset-global-css-btn" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button>
+                        <button id="save-css-config-btn" type="button" style="background: #007bff; border: 1px solid #007bff; color: white; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 5px;">保存配置</button>
                     </label>
                     <textarea id="global-css-input" rows="6" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 16px; resize: vertical;" placeholder="/* 示例：将所有顶部栏变为粉色 */
 .header, .qzone-header {
@@ -7804,6 +7960,14 @@
 #qzone-screen .qzone-content {
     background-color: #fff0f5 !important;
 }"></textarea>
+                </div>
+                
+                <!-- 已保存的美化配置列表 -->
+                <div class="form-group" style="margin-top: 15px;">
+                    <label>已保存的美化配置</label>
+                    <div id="css-configs-list" style="max-height: 150px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 8px; padding: 10px; background-color: var(--secondary-bg);">
+                        <!-- CSS配置列表将在这里动态生成 -->
+                    </div>
                 </div>
                 <!-- JSON导入导出按钮 -->
                 <div style="display: flex; gap: 10px; margin-top: 20px;">
@@ -10222,7 +10386,7 @@ commentActions.forEach(action => {
                 // ===================================================================
         
         // ▼▼▼ 【请用这个 V29 版本】完整替换旧的 db.version(...) 代码块 ▼▼▼
-            db.version(31).stores({
+            db.version(32).stores({
             chats: '&id, isGroup, groupId, isPinned',
             apiConfig: '&id', 
             globalSettings: '&id', 
@@ -10243,7 +10407,8 @@ commentActions.forEach(action => {
             apiPresets: '++id, name',
                 renderingRules: '++id, name, chatId',
                 fonts: '++id, name, url, isActive',
-                jsonConfigs: '++id, name, config, createdAt'
+                jsonConfigs: '++id, name, config, createdAt',
+                cssConfigs: '++id, name, css, createTime, updateTime'
         }).upgrade(tx => {
             // 这个升级函数会自动处理数据迁移
             console.log('数据库升级到版本31，添加jsonConfigs表');
@@ -12114,6 +12279,87 @@ if (!state.globalSettings.widgetData) {
             }
         }
         // ▲▲▲ 新增函数结束 ▲▲▲
+        
+        // ▼▼▼ 【全新】壁纸应用函数 ▼▼▼
+        function applyGlobalWallpaper() {
+            // 设置body背景为白色
+            document.body.style.backgroundColor = '#ffffff';
+            
+            // 应用白色透明度为0%的背景到主屏幕
+            const homeScreen = document.getElementById('home-screen');
+            if (homeScreen) {
+                homeScreen.style.backgroundImage = 'linear-gradient(135deg, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0))';
+                homeScreen.style.backgroundColor = 'transparent';
+            }
+        }
+        // ▲▲▲ 新增函数结束 ▲▲▲
+        
+        // ▼▼▼ 【修复】后台活动角色选择核心函数 - 移动到renderApiSettings之前 ▼▼▼
+        /**
+         * 渲染后台活动角色选择列表
+         */
+        function renderBackgroundCharactersList() {
+            const container = document.getElementById('background-characters-container');
+            if (!container) return;
+            
+            // 获取所有联系人（单聊角色）
+            const characters = Object.values(state.chats).filter(chat => !chat.isGroup);
+            
+            if (characters.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999; padding: 20px;">暂无联系人</p>';
+                return;
+            }
+            
+            // 【修复】从API配置中获取已选择的角色列表
+            const selectedCharacters = state.apiConfig.backgroundActivityCharacters || [];
+            
+            container.innerHTML = characters.map(chat => `
+                <div style="display: flex; align-items: center; padding: 8px; border-bottom: 1px solid #eee;">
+                    <input type="checkbox" 
+                           id="bg-char-${chat.id}" 
+                           value="${chat.id}" 
+                           ${selectedCharacters.includes(chat.id) ? 'checked' : ''}
+                           style="margin-right: 10px;">
+                    <label for="bg-char-${chat.id}" style="flex: 1; cursor: pointer; margin: 0;">
+                        <div style="display: flex; align-items: center;">
+                            <img src="${chat.settings.aiAvatar || 'https://files.catbox.moe/q6z5fc.jpeg'}" 
+                                 style="width: 32px; height: 32px; border-radius: 50%; margin-right: 10px; object-fit: cover;">
+                            <div>
+                                <div style="font-weight: bold;">${chat.name}</div>
+                                <div style="font-size: 12px; color: #666;">${chat.originalName}</div>
+                            </div>
+                        </div>
+                    </label>
+                </div>
+            `).join('');
+        }
+        
+        /**
+         * 保存后台活动角色选择
+         */
+        async function saveBackgroundCharactersSelection() {
+            const checkboxes = document.querySelectorAll('#background-characters-container input[type="checkbox"]:checked');
+            const selectedCharacterIds = Array.from(checkboxes).map(cb => cb.value);
+            
+            // 【修复】保存到API配置中
+            if (!state.apiConfig) state.apiConfig = {};
+            state.apiConfig.backgroundActivityCharacters = selectedCharacterIds;
+            
+            // 保存到数据库
+            await db.apiConfig.put(state.apiConfig);
+            
+            console.log('已保存后台活动角色选择:', selectedCharacterIds);
+        }
+        
+        /**
+         * 检查角色是否参与后台活动
+         */
+        function isCharacterInBackgroundActivity(chatId) {
+            const selectedCharacters = state.apiConfig?.backgroundActivityCharacters || [];
+            return selectedCharacters.includes(chatId);
+        }
+        // ▲▲▲ 修复结束 ▲▲▲
+        
         // ▼▼▼ 【请用这个新版本】替换旧的 renderApiSettings 函数 ▼▼▼
         function renderApiSettings() { 
             // 1. 渲染当前配置到输入框
@@ -12127,6 +12373,9 @@ if (!state.globalSettings.widgetData) {
         
             // 2. 【核心新增】加载并渲染预设下拉菜单
             loadApiPresetsDropdown();
+            
+            // 3. 【修复】渲染后台活动角色选择列表
+            renderBackgroundCharactersList();
         }
         // ▲▲▲ 替换结束 ▲▲▲
                 window.renderApiSettingsProxy = renderApiSettings;
@@ -12912,7 +13161,7 @@ if (!state.globalSettings.widgetData) {
          * 【总入口】打开批量导入表情的弹窗
          */
         async function openBatchStickerImportModal() {
-            const placeholderText = `请按照以下格式粘贴，一行一个：\n\n开心——https://example.com/happy.png\n难过——https://example.com/sad.jpg\n惊讶——https://example.com/surprised.gif`;
+            const placeholderText = `支持多种格式，一行一个：\n\n名称：链接\n名称，链接\n名称,链接\n名称"链接"\n名称[链接]\n\n示例：\n开心：https://example.com/happy.png\n难过，https://example.com/sad.jpg\n惊讶,https://example.com/surprised.gif\n愤怒"https://example.com/angry.gif"\n惊讶[https://example.com/wow.png]`;
             
             const pastedText = await showCustomPrompt(
                 '批量导入表情',
@@ -12942,20 +13191,77 @@ if (!state.globalSettings.widgetData) {
                     continue; 
                 }
         
-                // 解析新格式：名称——完整链接
-                const match = trimmedLine.match(/^(.+?)——(.+)$/);
+                let name = '';
+                let url = '';
+                let matched = false;
                 
+                // 支持多种格式的解析
+                // 格式1: 名称：链接
+                let match = trimmedLine.match(/^(.+?)：(.+)$/);
                 if (match) {
-                    const name = match[1].trim();
-                    const url = match[2].trim();
-                    
+                    name = match[1].trim();
+                    url = match[2].trim();
+                    matched = true;
+                }
+                
+                // 格式2: 名称，链接
+                if (!matched) {
+                    match = trimmedLine.match(/^(.+?)，(.+)$/);
+                    if (match) {
+                        name = match[1].trim();
+                        url = match[2].trim();
+                        matched = true;
+                    }
+                }
+                
+                // 格式3: 名称,链接
+                if (!matched) {
+                    match = trimmedLine.match(/^(.+?),(.+)$/);
+                    if (match) {
+                        name = match[1].trim();
+                        url = match[2].trim();
+                        matched = true;
+                    }
+                }
+                
+                // 格式4: 名称"链接"
+                if (!matched) {
+                    match = trimmedLine.match(/^(.+?)"(.+)"$/);
+                    if (match) {
+                        name = match[1].trim();
+                        url = match[2].trim();
+                        matched = true;
+                    }
+                }
+                
+                // 格式5: 名称[链接]
+                if (!matched) {
+                    match = trimmedLine.match(/^(.+?)\[(.+)\]$/);
+                    if (match) {
+                        name = match[1].trim();
+                        url = match[2].trim();
+                        matched = true;
+                    }
+                }
+                
+                // 兼容旧格式: 名称——链接
+                if (!matched) {
+                    match = trimmedLine.match(/^(.+?)——(.+)$/);
+                    if (match) {
+                        name = match[1].trim();
+                        url = match[2].trim();
+                        matched = true;
+                    }
+                }
+                
+                if (matched && name && url) {
                     // 验证URL格式
                     if (url.startsWith('http://') || url.startsWith('https://')) {
-                    newStickers.push({
-                        id: 'sticker_' + Date.now() + Math.random(), // 确保ID唯一
-                        name: name,
+                        newStickers.push({
+                            id: 'sticker_' + Date.now() + Math.random(), // 确保ID唯一
+                            name: name,
                             url: url
-                    });
+                        });
                     } else {
                         errorCount++;
                         console.warn('批量导入URL格式错误，已跳过此行:', trimmedLine);
@@ -13348,12 +13654,12 @@ if (!state.globalSettings.widgetData) {
             state.activeChatId = chatId;
             const chat = state.chats[chatId];
             if (!chat) return; // 安全检查
-        
+
             if (chat.unreadCount > 0) {
                 chat.unreadCount = 0;
                 await db.chats.put(chat);
             }
-            applyLyricsBarPosition(chat); 
+            applyLyricsBarPosition(chat);
             renderChatInterface(chatId);
             showScreen('chat-interface-screen');
             window.updateListenTogetherIconProxy(state.activeChatId);
@@ -13811,6 +14117,8 @@ if (!state.globalSettings.widgetData) {
                 console.log("本次发送给AI的【挂载记忆】内容如下：\n", linkedMemoryContext);
         
                 if (chat.isGroup) {
+                    console.log(`[群聊AI回复] 开始处理群聊 "${chat.name}" 的AI回复`);
+                    
                     let timeContextText = '';
                     let longTimeNoSee = false; 
 
@@ -13831,7 +14139,7 @@ if (!state.globalSettings.widgetData) {
                                 const linkedChat = item.chat;
                                 const prefix = linkedChat.isGroup ? '[群聊]' : '[私聊]';
                                 const timeAgo = item.latestTimestamp > 0 ? ` (最后互动于 ${formatTimeAgo(item.latestTimestamp)})` : '';
-                                linkedMemoryContext += `\n## --- 来自${prefix}“${linkedChat.name}”的参考记忆${timeAgo} ---\n`;
+                                linkedMemoryContext += `\n## --- 来自${prefix}"${linkedChat.name}"的参考记忆${timeAgo} ---\n`;
                                 const recentHistory = linkedChat.history.slice(-memoryCount);
                                 const filteredHistory = recentHistory.filter(msg => !String(msg.content).includes('已被用户删除'));
                                 if (filteredHistory.length > 0) {
@@ -13981,7 +14289,6 @@ ${longTermMemoryContext}
         -   **【【【全新】】】发送后立刻撤回 (动画效果)**: '{"type": "send_and_recall", "name": "角色本名", "content": "你想让角色说出后立刻消失的话"}'
         -   **【【【全新】】】切换歌曲**: '{"type": "change_music", "name": "你的角色本名", "song_name": "你想切换到的歌曲名"}' (歌曲名必须在下面的播放列表中)
         - 发送表情: '{"type": "sticker", "name": "角色本名", "url": "https://...表情URL...", "meaning": "(可选)表情的含义"}'
-        -   **发送图片**: '{"type": "ai_image", "name": "角色本名", "description": "图片的详细【中文】描述", "image_prompt": "图片的【英文】关键词, 用%20分隔, 风格为风景/动漫/插画/二次元等, 禁止真人"}'
         -   **发送语音**: '{"type": "voice_message", "name": "角色本名", "content": "语音的文字内容"}'
         -   **发起外卖代付**: '{"type": "waimai_request", "name": "角色本名", "productInfo": "一杯奶茶", "amount": 18}'
         -   **【新】发起群视频**: '{"type": "group_call_request", "name": "你的角色本名"}'
@@ -14652,11 +14959,15 @@ messagesPayload = historySlice.map(msg => {
                 const data = await response.json();
                 // 【核心修改3】这里的 getGeminiResponseText 函数本身是兼容两种格式的，所以不需要改动
                 const aiResponseContent = getGeminiResponseText(data); 
-        
+
+                console.log(`[群聊AI回复] API响应内容:`, aiResponseContent);
+
                 lastRawAiResponse = aiResponseContent;
                 lastResponseTimestamps = [];
                 chat.history = chat.history.filter(msg => !msg.isTemporary);
                 const messagesArray = parseAiResponse(aiResponseContent);
+                
+                console.log(`[群聊AI回复] 解析后的消息数组:`, messagesArray);
                 const lastUserMessage = chat.history.filter(m => m.role === 'user' && !m.isHidden).pop();
                 if (lastUserMessage && 
                     Array.isArray(lastUserMessage.content) && 
@@ -14691,6 +15002,7 @@ messagesPayload = historySlice.map(msg => {
                 let notificationShown = false;
         
                 for (const msgData of messagesArray) {
+                    console.log(`[群聊AI回复] 处理消息数据:`, msgData);
                     
                     if (chat.isGroup && msgData.name && msgData.name === chat.name) {
                         console.error(`AI幻觉已被拦截！试图使用群名 ("${chat.name}") 作为角色名。消息内容:`, msgData);
@@ -14703,8 +15015,10 @@ messagesPayload = historySlice.map(msg => {
                     if (!msgData.type) {
                         if (chat.isGroup && msgData.name && msgData.message) {
                             msgData.type = 'text';
+                            console.log(`[群聊AI回复] 自动设置消息类型为text:`, msgData);
                         } else if (msgData.content) {
                             msgData.type = 'text';
+                            console.log(`[群聊AI回复] 自动设置消息类型为text:`, msgData);
                         } else {
                             console.warn("收到了格式不规范的AI指令（缺少type和content），已跳过:", msgData);
                             continue;
@@ -15520,6 +15834,7 @@ case 'qzone_post':
                         
                         case 'text':
                             aiMessage = { ...baseMessage, content: String(msgData.content || msgData.message) };
+                            console.log(`[群聊AI回复] 创建文本消息:`, aiMessage);
                             break;
                         case 'sticker':
                             aiMessage = { ...baseMessage, type: 'sticker', content: msgData.url, meaning: msgData.meaning || '' };
@@ -15558,6 +15873,7 @@ case 'qzone_post':
                     }
         
                     if (aiMessage) {
+                        console.log(`[群聊AI回复] 添加消息到聊天历史:`, aiMessage);
                         chat.history.push(aiMessage);
                         if (!isViewingThisChat && !notificationShown) {
                             let notificationText;
@@ -15574,15 +15890,18 @@ case 'qzone_post':
                             showNotification(chatId, finalNotifText.substring(0, 40) + (finalNotifText.length > 40 ? '...' : ''));
                             notificationShown = true;
                         }
-        
+
                         if (!isViewingThisChat) {
                             chat.unreadCount = (chat.unreadCount || 0) + 1;
                         }
                         
                         if (isViewingThisChat) {
+                            console.log(`[群聊AI回复] 显示消息到界面:`, aiMessage);
                             appendMessage(aiMessage, chat);
                             await new Promise(resolve => setTimeout(resolve, Math.random() * 1800 + 1000));
                         }
+                    } else {
+                        console.log(`[群聊AI回复] 消息为空，跳过处理`);
                     }
                 }        
         
@@ -15655,15 +15974,7 @@ case 'qzone_post':
                 }
             }
         }
-        // ▲▲▲ 替换结束 ▲▲▲
-        
-        
-        
-        
-        
-        
-        
-                async function sendSticker(sticker) { if (!state.activeChatId) return; const chat = state.chats[state.activeChatId]; const msg = { role: 'user', content: sticker.url, meaning: sticker.name, timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); document.getElementById('sticker-panel').classList.remove('visible'); }
+        // ▲▲▲ 替换结束 ▲▲▲        async function sendSticker(sticker) { if (!state.activeChatId) return; const chat = state.chats[state.activeChatId]; const msg = { role: 'user', content: sticker.url, meaning: sticker.name, timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); document.getElementById('sticker-panel').classList.remove('visible'); }
         
                 async function sendUserTransfer() { if (!state.activeChatId) return; const amountInput = document.getElementById('transfer-amount'); const noteInput = document.getElementById('transfer-note'); const amount = parseFloat(amountInput.value); const note = noteInput.value.trim(); if (isNaN(amount) || amount < 0 || amount > 999999) { alert('请输入有效的金额 (0 到 999999 之间)！'); return; } const chat = state.chats[state.activeChatId]; const senderName = chat.isGroup ? (chat.settings.myNickname || '我') : '我'; const receiverName = chat.isGroup ? '群聊' : chat.name; const msg = { role: 'user', type: 'transfer', amount: amount, note: note, senderName, receiverName, timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); document.getElementById('transfer-modal').classList.remove('visible'); amountInput.value = ''; noteInput.value = ''; }
         /**
@@ -16959,7 +17270,7 @@ function fixUnplayableSongs() {
                         filteredHistory.forEach(msg => {
                             const sender = msg.role === 'user' ? (linkedChat.settings.myNickname || '我') : (msg.senderName || linkedChat.name);
                             let contentText = String(msg.content);
-                            if (msg.type === 'ai_image' || msg.type === 'user_photo') {
+                            if (msg.type === 'user_photo') {
                                 contentText = `[发送了一张图片，描述为：${msg.content}]`;
                             } else if (msg.type === 'voice_message') {
                                 contentText = `[发送了一条语音，内容是：${msg.content}]`;
@@ -17592,7 +17903,6 @@ ${longTermMemoryContext}
         # 你的可选行动指令:
         -   **发送文本**: '{"type": "text", "name": "角色本名", "content": "文本内容"}'
         -   **发送表情**: '{"type": "sticker", "name": "角色本名", "url": "...", "meaning": "..."}'
-        -   **发送图片**: '{"type": "ai_image", "name": "角色本名", "description": "图片的详细【中文】描述", "image_prompt": "图片的【英文】关键词, 用%20分隔, 风格为风景/动漫/插画/二次元等, 禁止真人"}'
         -   **发起投票**: '{"type": "poll", "name": "角色本名", "question": "...", "options": "..."}'
         -   **发起群视频**: '{"type": "group_call_request", "name": "角色本名"}'
         -【【【全新】】】如何正确使用“引用回复”功能：
@@ -18218,22 +18528,11 @@ ${longTermMemoryContext}
         
             let initialContent;
             // 【【【核心修复1：在这里添加 'offline_text' 类型】】】
-            const isSpecialType = message.type && ['voice_message', 'ai_image', 'transfer', 'offline_text'].includes(message.type);
+            const isSpecialType = message.type && ['voice_message', 'transfer', 'offline_text'].includes(message.type);
             
             if (isSpecialType) {
                 let fullMessageObject = { type: message.type };
                 if (message.type === 'voice_message') fullMessageObject.content = message.content;
-        // =======================================================
-        // ▼▼▼ 【【【核心修改1】】】在这里为AI图片对象添加开关状态 ▼▼▼
-        // =======================================================
-        else if (message.type === 'ai_image') {
-            fullMessageObject.description = message.content;
-            // 读取当前是否使用了AI生图，并将其作为 "use_ai_image" 字段
-            fullMessageObject.use_ai_image = !!message.image_prompt;
-        }
-        // ▲▲▲ 【【【修改结束】】】 ▲▲▲
-
-                else if (message.type === 'ai_image') fullMessageObject.description = message.content;
                 else if (message.type === 'transfer') {
                     fullMessageObject.amount = message.amount;
                     fullMessageObject.note = message.note;
@@ -18373,20 +18672,7 @@ ${longTermMemoryContext}
                         newMessage.description = parsedResult.description;
                         delete newMessage.content; // 同时删除多余的 content 字段
                     }
-            else if (parsedResult.type === 'ai_image') {
-                // 描述文字始终保存在 content 字段
-                newMessage.content = parsedResult.description || '';
-                
-                // 根据 use_ai_image 的值来决定是否填充 image_prompt
-                if (parsedResult.use_ai_image) {
-                    // 如果为 true, 就用描述文字作为 prompt
-                    newMessage.image_prompt = parsedResult.description || '';
-                } else {
-                    // 如果为 false 或不存在, 就清空 prompt, 从而显示占位图
-                    newMessage.image_prompt = '';
-                }
-            }
-            // ▲▲▲ 【【【修改结束】】】 ▲▲▲
+                    // ▲▲▲ 【【【修改结束】】】 ▲▲▲
                     // --- （其他类型的判断保持不变） ---
                     else if (parsedResult.meaning) newMessage.meaning = parsedResult.meaning;
                     else if (parsedResult.amount) newMessage.amount = parsedResult.amount;
@@ -18394,9 +18680,6 @@ ${longTermMemoryContext}
                     else if (parsedResult.title) newMessage.title = parsedResult.title;
                     else if (parsedResult.description) newMessage.description = parsedResult.description;
                     else if (parsedResult.source_name) newMessage.source_name = parsedResult.source_name;
-                    else if (parsedResult.description && parsedResult.type === 'ai_image') {
-                         newMessage.content = parsedResult.description;
-                    }
         
                     newMessages.push(newMessage);
                 }
@@ -18425,23 +18708,12 @@ ${longTermMemoryContext}
                         newMessage.description = parsedResult.description;
                         delete newMessage.content;
                     }
-            else if (parsedResult.type === 'ai_image') {
-                newMessage.content = parsedResult.description || '';
-                if (parsedResult.use_ai_image) {
-                    newMessage.image_prompt = parsedResult.description || '';
-                } else {
-                    newMessage.image_prompt = '';
-                }
-            }
                     else if (parsedResult.meaning) newMessage.meaning = parsedResult.meaning;
                     else if (parsedResult.amount) newMessage.amount = parsedResult.amount;
                     else if (parsedResult.note) newMessage.note = parsedResult.note;
                     else if (parsedResult.title) newMessage.title = parsedResult.title;
                     else if (parsedResult.description) newMessage.description = parsedResult.description;
                     else if (parsedResult.source_name) newMessage.source_name = parsedResult.source_name;
-                    else if (parsedResult.description && parsedResult.type === 'ai_image') {
-                         newMessage.content = parsedResult.description;
-                    }
         
                     newMessages.push(newMessage);
                 }
@@ -18517,12 +18789,6 @@ async function openPostEditor() {
             postObject.imageDescription = post.imageDescription;
         } else if (post.type === 'text_image') {
             postObject.hiddenContent = post.hiddenContent;
-            // =======================================================
-            // ▼▼▼ 【【【核心修改1】】】读取 image_prompt 状态 ▼▼▼
-            // =======================================================
-            // 如果 post.image_prompt 存在且不为空, 说明当前是AI生图模式
-            postObject.use_ai_image = !!post.image_prompt;
-            // ▲▲▲ 【【【修改结束】】】 ▲▲▲
         }
         contentForEditing = JSON.stringify(postObject, null, 2);
     }
@@ -18593,19 +18859,6 @@ async function saveEditedPost(postId, newRawContent) {
         post.hiddenContent = parsed.hiddenContent || '';
         post.content = ''; // 清空旧的说说内容字段
 
-        // =======================================================
-        // ▼▼▼ 【【【核心修改2】】】保存开关状态 ▼▼▼
-        // =======================================================
-        if (post.type === 'text_image') {
-            if (parsed.use_ai_image) {
-                // 如果开关为 true, 就用 hiddenContent 的内容生成 image_prompt
-                post.image_prompt = post.hiddenContent;
-            } else {
-                // 如果开关为 false, 就确保 image_prompt 为空
-                post.image_prompt = "";
-            }
-        }
-        // ▲▲▲ 【【【修改结束】】】 ▲▲▲
 
     } catch (e) {
         // 解析失败，认为是说说
@@ -18616,7 +18869,6 @@ async function saveEditedPost(postId, newRawContent) {
         post.imageUrl = '';
         post.imageDescription = '';
         post.hiddenContent = '';
-        post.image_prompt = ''; // 说说模式下也清空
     }
     
     await db.qzonePosts.put(post);
@@ -26525,6 +26777,9 @@ audioPlayer.addEventListener('play', () => {
             state.apiConfig.secondaryApiKey = document.getElementById('secondary-api-key').value.trim();
             state.apiConfig.secondaryModel = document.getElementById('secondary-model-select').value;
             
+            // 【修复】保存后台活动角色选择
+            await saveBackgroundCharactersSelection();
+            
             await db.apiConfig.put(state.apiConfig);
         
             // 后台活动设置的保存逻辑保持不变
@@ -29890,6 +30145,26 @@ document.getElementById('memory-list-container').addEventListener('click', (e) =
         // 下面这行代码已被安全地注释掉，因为它对应的HTML按钮不存在
         // document.getElementById('propel-call-btn').addEventListener('click', handlePropelCallAction);
         // ▲▲▲ 新增事件绑定结束 ▲▲▲
+        
+        // ▼▼▼ 【全新功能】后台活动角色选择相关事件绑定 ▼▼▼
+        document.getElementById('select-all-characters-btn').addEventListener('click', () => {
+            document.querySelectorAll('#background-characters-container input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        });
+        
+        document.getElementById('deselect-all-characters-btn').addEventListener('click', () => {
+            document.querySelectorAll('#background-characters-container input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        });
+        // ▲▲▲ 新增事件绑定结束 ▲▲▲
+        
+        // ▼▼▼ 【全新功能】CSS配置保存相关事件绑定 ▼▼▼
+        document.getElementById('save-css-config-btn').addEventListener('click', saveCssConfig);
+        // ▲▲▲ 新增事件绑定结束 ▲▲▲
+        
+        
 // 在 init() 函数的事件监听器区域...
 
 // 【全新】消息提示音设置事件
@@ -30095,7 +30370,7 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                                     <div style="font-size: 12px; color: var(--text-secondary); word-break: break-all;">${font.url}</div>
                                 </div>
                                 <div style="display: flex; gap: 10px; align-items: center;">
-                                    <button class="apply-font-btn" data-font-id="${font.id}" style="padding: 5px 10px; border: 1px solid var(--accent-color); background: ${font.isActive ? 'var(--accent-color)' : 'white'}; color: ${font.isActive ? 'white' : 'var(--accent-color)'}; border-radius: 3px; cursor: pointer; font-size: 12px;">
+                                    <button class="apply-font-btn" data-font-id="${font.id}" onclick="console.log('按钮被点击，ID:', ${font.id}); applyFont(${font.id});" style="padding: 5px 10px; border: 1px solid var(--accent-color); background: ${font.isActive ? 'var(--accent-color)' : 'white'}; color: ${font.isActive ? 'white' : 'var(--accent-color)'}; border-radius: 3px; cursor: pointer; font-size: 12px;">
                                         ${font.isActive ? '已应用' : '应用'}
                                     </button>
                                     <button class="delete-font-btn" data-font-id="${font.id}" style="padding: 5px 10px; border: 1px solid #dc3545; background: white; color: #dc3545; border-radius: 3px; cursor: pointer; font-size: 12px;">
@@ -30108,19 +30383,44 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                         });
                         
                         // 绑定事件
-                        container.querySelectorAll('.apply-font-btn').forEach(btn => {
+                        console.log('开始绑定字体按钮事件');
+                        const applyButtons = container.querySelectorAll('.apply-font-btn');
+                        const deleteButtons = container.querySelectorAll('.delete-font-btn');
+                        
+                        console.log('找到应用按钮数量:', applyButtons.length);
+                        console.log('找到删除按钮数量:', deleteButtons.length);
+                        
+                        applyButtons.forEach((btn, index) => {
+                            console.log(`绑定应用按钮 ${index + 1}, fontId:`, btn.dataset.fontId);
                             btn.addEventListener('click', async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('应用按钮被点击, fontId:', e.target.dataset.fontId);
                                 const fontId = parseInt(e.target.dataset.fontId);
+                                if (isNaN(fontId)) {
+                                    console.error('无效的字体ID:', e.target.dataset.fontId);
+                                    return;
+                                }
                                 await applyFont(fontId);
                             });
                         });
                         
-                        container.querySelectorAll('.delete-font-btn').forEach(btn => {
+                        deleteButtons.forEach((btn, index) => {
+                            console.log(`绑定删除按钮 ${index + 1}, fontId:`, btn.dataset.fontId);
                             btn.addEventListener('click', async (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                console.log('删除按钮被点击, fontId:', e.target.dataset.fontId);
                                 const fontId = parseInt(e.target.dataset.fontId);
+                                if (isNaN(fontId)) {
+                                    console.error('无效的字体ID:', e.target.dataset.fontId);
+                                    return;
+                                }
                                 await deleteFont(fontId);
                             });
                         });
+                        
+                        console.log('字体按钮事件绑定完成');
                         
                     } catch (error) {
                         console.error('渲染字体库失败:', error);
@@ -30133,8 +30433,14 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                  */
                 async function applyFont(fontId) {
                     try {
+                        console.log('开始应用字体，ID:', fontId);
                         const font = await db.fonts.get(fontId);
-                        if (!font) return;
+                        if (!font) {
+                            console.error('字体不存在，ID:', fontId);
+                            return;
+                        }
+                        
+                        console.log('找到字体:', font.name, font.url);
                         
                         // 将所有字体设置为非激活状态
                         await db.fonts.toCollection().modify({ isActive: false });
@@ -30143,31 +30449,62 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                         await db.fonts.update(fontId, { isActive: true });
                         
                         // 应用字体
-                        const style = document.getElementById('dynamic-font-style');
-                        if (style) {
-                            // 检查URL类型，使用不同的加载方式
-                            if (font.url.includes('fonts.googleapis.com') || font.url.includes('fonts.gstatic.com')) {
-                                // Google Fonts 使用 @import
-                                style.textContent = `
-                                    @import url('${font.url}');
-                                    body, input, textarea, button, #font-preview {
-                                        font-family: '${font.name}', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-                                    }
-                                `;
-                            } else {
-                                // TTF/OTF 文件使用 @font-face
-                                style.textContent = `
-                                    @font-face {
-                                        font-family: '${font.name}';
-                                        src: url('${font.url}') format('truetype');
-                                        font-weight: normal;
-                                        font-style: normal;
-                                        font-display: swap;
-                                    }
-                                    body, input, textarea, button, #font-preview {
-                                        font-family: '${font.name}', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
-                                    }
-                                `;
+                        let style = document.getElementById('dynamic-font-style');
+                        if (!style) {
+                            // 如果元素不存在，创建一个
+                            style = document.createElement('style');
+                            style.id = 'dynamic-font-style';
+                            document.head.appendChild(style);
+                            console.log('创建了新的字体样式元素');
+                        }
+                        
+                        // 检查URL类型，使用不同的加载方式
+                        let cssContent = '';
+                        if (font.url.includes('fonts.googleapis.com') || font.url.includes('fonts.gstatic.com')) {
+                            // Google Fonts 使用 @import
+                            cssContent = `
+                                @import url('${font.url}');
+                                * {
+                                    font-family: '${font.name}', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+                                }
+                            `;
+                        } else {
+                            // TTF/OTF 文件使用 @font-face，针对移动端优化
+                            cssContent = `
+                                @font-face {
+                                    font-family: '${font.name}';
+                                    src: url('${font.url}') format('truetype');
+                                    font-weight: normal;
+                                    font-style: normal;
+                                    font-display: swap;
+                                }
+                                * {
+                                    font-family: '${font.name}', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+                                }
+                                body, input, textarea, button, div, span, p, h1, h2, h3, h4, h5, h6, a, li, ul, ol, table, td, th {
+                                    font-family: '${font.name}', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+                                }
+                            `;
+                        }
+                        
+                        style.textContent = cssContent;
+                        console.log('已应用字体样式:', cssContent);
+                        
+                        // 【优化】简化字体加载，减少延迟
+                        if (!font.url.includes('fonts.googleapis.com') && !font.url.includes('fonts.gstatic.com')) {
+                            try {
+                                // 异步加载字体，不等待完成
+                                const fontFace = new FontFace(font.name, `url(${font.url})`);
+                                document.fonts.add(fontFace);
+                                
+                                // 不等待字体加载完成，立即应用
+                                fontFace.load().then(() => {
+                                    console.log('字体后台加载完成:', font.name);
+                                }).catch(fontError => {
+                                    console.warn('字体加载失败，使用CSS方式:', fontError);
+                                });
+                            } catch (fontError) {
+                                console.warn('字体加载失败，使用CSS方式:', fontError);
                             }
                         }
                         
@@ -30178,7 +30515,25 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                         // 刷新字体库列表
                         await renderFontLibrary();
                         
-                        await showCustomAlert('成功', `已应用字体："${font.name}"`);
+                        // 【优化】立即应用字体，无延迟
+                        // 移动端：直接应用字体，不刷新页面
+                        if (window.innerWidth <= 768) {
+                            // 移动端：只重新渲染主要文本元素，避免性能问题
+                            const textElements = document.querySelectorAll('body, input, textarea, button, div, span, p, h1, h2, h3, h4, h5, h6, a, li, ul, ol, table, td, th, .font-item, .font-preview');
+                            textElements.forEach(el => {
+                                el.style.fontFamily = `'${font.name}', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif`;
+                            });
+                            console.log('移动端字体已立即应用');
+                            
+                            // 立即显示成功消息
+                            showCustomAlert('成功', `已应用字体："${font.name}"`);
+                        } else {
+                            // PC端：立即刷新
+                            showCustomAlert('成功', `已应用字体："${font.name}"，页面将刷新`);
+                            setTimeout(() => {
+                                location.reload();
+                            }, 100);
+                        }
                         
                     } catch (error) {
                         console.error('应用字体失败:', error);
@@ -30344,6 +30699,118 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                 }
                 
                 // ▲▲▲ 文件处理工具函数结束 ▲▲▲
+                
+                // ▼▼▼ 【全新】CSS配置保存功能函数 ▼▼▼
+                
+                /**
+                 * 保存CSS配置
+                 */
+                async function saveCssConfig() {
+                    const cssContent = document.getElementById('global-css-input').value.trim();
+                    if (!cssContent) {
+                        alert('请输入CSS内容！');
+                        return;
+                    }
+                    
+                    const configName = await showCustomPrompt('保存配置', '请输入配置名称：');
+                    if (!configName || !configName.trim()) {
+                        return;
+                    }
+                    
+                    try {
+                        const config = {
+                            id: 'css_config_' + Date.now(),
+                            name: configName.trim(),
+                            css: cssContent,
+                            createTime: new Date().toISOString(),
+                            updateTime: new Date().toISOString()
+                        };
+                        
+                        await db.cssConfigs.add(config);
+                        await renderCssConfigsList();
+                        await showCustomAlert('成功', 'CSS配置已保存！');
+                    } catch (error) {
+                        console.error('保存CSS配置失败:', error);
+                        alert('保存失败，请重试！');
+                    }
+                }
+                
+                /**
+                 * 渲染CSS配置列表
+                 */
+                async function renderCssConfigsList() {
+                    const container = document.getElementById('css-configs-list');
+                    if (!container) return;
+                    
+                    const configs = await db.cssConfigs.orderBy('updateTime').reverse().toArray();
+                    
+                    if (configs.length === 0) {
+                        container.innerHTML = '<p style="text-align: center; color: #999; margin: 20px 0;">暂无保存的配置</p>';
+                        return;
+                    }
+                    
+                    container.innerHTML = configs.map(config => `
+                        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; cursor: pointer;" 
+                             onclick="loadCssConfig('${config.id}')">
+                            <div>
+                                <div style="font-weight: 500; color: var(--text-primary);">${config.name}</div>
+                                <div style="font-size: 12px; color: var(--text-secondary);">
+                                    ${new Date(config.updateTime).toLocaleString()}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 5px;">
+                                <button onclick="event.stopPropagation(); loadCssConfig('${config.id}')" 
+                                        style="background: #007bff; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                                    应用
+                                </button>
+                                <button onclick="event.stopPropagation(); deleteCssConfig('${config.id}')" 
+                                        style="background: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer;">
+                                    删除
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+                
+                /**
+                 * 加载CSS配置
+                 */
+                async function loadCssConfig(configId) {
+                    try {
+                        const config = await db.cssConfigs.get(configId);
+                        if (config) {
+                            // 加载到输入框
+                            document.getElementById('global-css-input').value = config.css;
+                            
+                            // 【修复】实际应用样式
+                            applyGlobalCss(config.css);
+                            
+                            await showCustomAlert('成功', `已加载并应用配置：${config.name}`);
+                        }
+                    } catch (error) {
+                        console.error('加载CSS配置失败:', error);
+                        alert('加载失败，请重试！');
+                    }
+                }
+                
+                /**
+                 * 删除CSS配置
+                 */
+                async function deleteCssConfig(configId) {
+                    const confirmed = await showCustomConfirm('删除配置', '确定要删除这个CSS配置吗？');
+                    if (confirmed) {
+                        try {
+                            await db.cssConfigs.delete(configId);
+                            await renderCssConfigsList();
+                            await showCustomAlert('成功', '配置已删除！');
+                        } catch (error) {
+                            console.error('删除CSS配置失败:', error);
+                            alert('删除失败，请重试！');
+                        }
+                    }
+                }
+                
+                // ▲▲▲ CSS配置保存功能函数结束 ▲▲▲
                 
                 // ▼▼▼ 【全新】JSON导入导出功能函数 ▼▼▼
                 
@@ -30745,6 +31212,10 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                 window.applyJsonConfig = applyJsonConfig;
                 window.exportJsonConfig = exportJsonConfig;
                 window.deleteJsonConfig = deleteJsonConfig;
+                window.loadCssConfig = loadCssConfig;
+                window.deleteCssConfig = deleteCssConfig;
+                window.applyFont = applyFont;
+                window.deleteFont = deleteFont;
                 
                 // ▲▲▲ JSON配置列表管理函数结束 ▲▲▲
         
