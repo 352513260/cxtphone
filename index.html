@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <!-- 
 === 版本更新指南 ===
@@ -12,15 +13,15 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>EPhone - 智能聊天应用</title>
     
     <!-- 版本控制：每次更新时修改此版本号 -->
-    <meta name="app-version" content="v1.5.0">
+    <meta name="app-version" content="v1.6.0">
     
     <!-- ▼▼▼ PWA全屏配置 ▼▼▼ -->
     <!-- 1. PWA Manifest文件 -->
-    <link rel="manifest" href="manifest.json?v=1.5.0">
+    <link rel="manifest" href="manifest.json?v=1.6.0">
     
     <!-- 2. 苹果设备全屏支持 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -41,15 +42,15 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="msapplication-tap-highlight" content="no">
     <!-- ▲▲▲ PWA配置结束 ▲▲▲ -->
-    <!-- 版本号：v1.5.0 - 每次更新时请修改此版本号 -->
-    <script src="https://unpkg.com/dexie/dist/dexie.js?v=1.5.0"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js?v=1.5.0"></script>
+    <!-- 版本号：v1.6.0 - 每次更新时请修改此版本号 -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js?v=1.6.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js?v=1.6.0"></script>
     
     <!-- PWA Service Worker 注册 -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=1.5.0')
+                navigator.serviceWorker.register('./sw.js?v=1.6.0')
                     .then((registration) => {
                         console.log('SW registered: ', registration);
                     })
@@ -330,10 +331,57 @@
             checkFullscreenMode();
         }
         
+        // ▼▼▼ 【修复】状态栏控制函数 ▼▼▼
+        function initStatusBarControl() {
+            const statusBarToggle = document.getElementById('status-bar-toggle-switch');
+            const phoneScreen = document.getElementById('phone-screen');
+            
+            // 添加检查确保state已初始化
+            if (!window.state) {
+                console.warn('状态栏控制初始化失败：state未定义，将延迟初始化');
+                return;
+            }
+            
+            if (statusBarToggle && phoneScreen) {
+                // 初始化状态栏显示状态
+                const showStatusBar = state.globalSettings?.showStatusBar || false;
+                statusBarToggle.checked = showStatusBar;
+                
+                if (showStatusBar) {
+                    phoneScreen.classList.add('status-bar-visible');
+                } else {
+                    phoneScreen.classList.remove('status-bar-visible');
+                }
+                
+                // 添加切换事件监听器
+                statusBarToggle.addEventListener('change', (e) => {
+                    const isVisible = e.target.checked;
+                    
+                    if (isVisible) {
+                        phoneScreen.classList.add('status-bar-visible');
+                    } else {
+                        phoneScreen.classList.remove('status-bar-visible');
+                    }
+                    
+                    // 保存设置
+                    if (!state.globalSettings) {
+                        state.globalSettings = {};
+                    }
+                    state.globalSettings.showStatusBar = isVisible;
+                    
+                    console.log('状态栏显示状态:', isVisible ? '显示' : '隐藏');
+                });
+                
+                console.log('状态栏控制已初始化');
+            }
+        }
+        // ▲▲▲ 状态栏控制函数结束 ▲▲▲
+        
         window.addEventListener('load', () => {
             checkFullscreenMode();
             checkForUpdates();
             checkPWAInstallability();
+            initStatusBarControl(); // 初始化状态栏控制
             
         });
         window.addEventListener('resize', handleResize);
@@ -346,60 +394,65 @@
         
         /* --- 请用下面这【一整块】全新的代码，替换掉你现有的 html, body, 和 #phone-screen 样式 --- */
         
-        /* 1. 重置 html 元素 - 手机浏览器适配 */
+        /* 1. 重置 html 元素 */
         html {
             -webkit-text-size-adjust: 100%;
-            height: 100%;
-            overflow: hidden;
-            margin: 0;
-            padding: 0;
+            height: 100%; /* 确保html元素也能撑满 */
         }
         
-        /* 2. 设置 body 为全屏画布 - iOS全屏适配 */
+        /* 2. 设置 body 为全屏画布 */
         body {
             margin: 0;
-            padding: 0;
             font-family: 'bulangni', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             font-weight: normal;
-            background-color: #ffffff;
-            height: 100vh;
-            min-height: 100vh;
-            min-height: -webkit-fill-available; /* Safari支持 */
-            overflow: hidden;
-            position: relative;
-            /* iOS全屏优化 */
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-touch-callout: none;
-            -webkit-tap-highlight-color: transparent;
-            /* 确保在iOS上填满整个屏幕，但避开状态栏 */
-            width: 100vw;
-            max-width: 100vw;
-            /* 添加顶部安全区域支持 */
-            padding-top: env(safe-area-inset-top);
+            background-color: #f0f2f5;
+            height: 100%; /* 让body也撑满父元素(html) */
+            overflow: hidden; /* 防止body本身出现滚动条 */
         }
         
         /* --- Start of Replacement Code --- */
         
         #phone-screen {
-            /* iOS全屏适配 - 解决底部空白问题 */
-            width: 100vw;
-            height: calc(100vh - env(safe-area-inset-top));
-            min-height: calc(100vh - env(safe-area-inset-top));
-            min-height: calc(-webkit-fill-available - env(safe-area-inset-top)); /* Safari支持 */
+            width: 100%;
+            /* Use 100vh to ensure it fills the entire screen height */
+            height: 100vh; 
             position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            background-color: #ffffff;
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            /* 确保在iOS上完全填满屏幕，但避开状态栏 */
-            max-width: 100vw;
-            max-height: calc(100vh - env(safe-area-inset-top));
+            background-color: #ffffff; /* Your desired white background */
+        }
+        
+        #chat-input-area {
+            flex-shrink: 0;
+            padding: 8px;
+            /* This is the key: adds padding equal to the height of the "black bar" */
+            padding-bottom: calc(8px + env(safe-area-inset-bottom)); 
+            background-color: rgba(247, 247, 247, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .header, .qzone-header {
+            position: relative;
+            z-index: 15;
+            flex-shrink: 0;
+            padding: 15px 20px;
+            /* 核心：使用 calc() 自动加上顶部的安全距离 */
+            padding-top: calc(15px + env(safe-area-inset-top)); 
+            background-color: rgba(247, 247, 247, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: 600;
         }
         
         /* PWA全屏模式优化 - 由于已使用viewport单位，这里主要处理特殊样式 */
@@ -428,30 +481,8 @@
             display: none !important;
         }
         
-        /* Viewport单位全屏方法 - 确保所有容器都使用viewport单位 */
         * {
             box-sizing: border-box;
-        }
-        
-        /* 确保主要内容区域也使用viewport单位 */
-        .main-content {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
-        }
-        
-        /* 聊天消息区域适配viewport */
-        #chat-messages {
-            width: 100%;
-            height: calc(100vh - 120px); /* 减去输入区域高度 */
-            overflow-y: auto;
-        }
-        
-        /* 聊天列表区域适配viewport */
-        #chat-list-screen {
-            width: 100vw;
-            height: 100vh;
-            overflow: hidden;
         }
         
         /* 确保所有屏幕都适配手机浏览器 */
@@ -464,108 +495,7 @@
             overflow: hidden;
         }
         
-        /* iOS全屏优化 - 解决底部空白问题 */
-        @media screen and (max-width: 768px) {
-            html, body {
-                height: 100vh;
-                min-height: 100vh;
-                min-height: -webkit-fill-available; /* Safari 支持 */
-                width: 100vw;
-                max-width: 100vw;
-                overflow: hidden;
-                /* 确保在移动设备上正确处理安全区域 */
-                padding-top: env(safe-area-inset-top);
-            }
-            
-            #phone-screen {
-                /* 在iOS设备上确保完全填满屏幕，但避开状态栏 */
-                width: 100vw;
-                height: calc(100vh - env(safe-area-inset-top));
-                min-height: calc(100vh - env(safe-area-inset-top));
-                min-height: calc(-webkit-fill-available - env(safe-area-inset-top)); /* Safari 支持 */
-                max-width: 100vw;
-                max-height: calc(100vh - env(safe-area-inset-top));
-            }
-            
-            /* 确保聊天消息区域在iOS上有足够空间 */
-            #chat-messages {
-                height: calc(100vh - 140px - env(safe-area-inset-top)); /* 为输入区域和安全区域留出空间 */
-                height: calc(-webkit-fill-available - 140px - env(safe-area-inset-top)); /* Safari 支持 */
-            }
-            
-            /* iOS底部安全区域适配 */
-            #chat-input-area {
-                padding-bottom: max(8px, env(safe-area-inset-bottom, 8px));
-            }
-            
-            /* 确保所有屏幕在iOS上都是全屏 */
-            .screen {
-                width: 100vw;
-                height: 100vh;
-                min-height: 100vh;
-                min-height: -webkit-fill-available;
-                max-width: 100vw;
-                max-height: 100vh;
-            }
-        }
         
-        /* iOS Safari特殊处理 */
-        @supports (-webkit-touch-callout: none) {
-            html, body {
-                height: -webkit-fill-available;
-                min-height: -webkit-fill-available;
-            }
-            
-            #phone-screen {
-                height: -webkit-fill-available;
-                min-height: -webkit-fill-available;
-                max-height: -webkit-fill-available;
-            }
-            
-            .screen {
-                height: -webkit-fill-available;
-                min-height: -webkit-fill-available;
-                max-height: -webkit-fill-available;
-            }
-        }
-        
-        /* 额外的iOS全屏修复 */
-        @media screen and (max-device-width: 1024px) and (-webkit-min-device-pixel-ratio: 2) {
-            html, body {
-                height: 100vh;
-                min-height: 100vh;
-                min-height: -webkit-fill-available;
-                overflow: hidden;
-            }
-            
-            #phone-screen {
-                height: 100vh;
-                min-height: 100vh;
-                min-height: -webkit-fill-available;
-                position: fixed;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-            }
-        }
-        
-        #chat-input-area {
-            flex-shrink: 0;
-            padding: 8px;
-            /* 手机浏览器适配 - 避免导航条遮挡 */
-            padding-bottom: calc(8px + env(safe-area-inset-bottom, 20px)); 
-            background-color: rgba(247, 247, 247, 0.8);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-top: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            /* 确保在手机浏览器中可见 */
-            position: relative;
-            z-index: 10;
-            gap: 5px;
-        }
         
         /* --- End of Replacement Code --- */
 /* --- 【核心修改】这是控制状态栏显隐的新样式 --- */
@@ -600,7 +530,7 @@
             z-index: 15;
             flex-shrink: 0;
             padding: 15px 20px;
-            /* 由于body已经有padding-top，这里不需要再加安全距离 */
+            padding-top: 45px; /* 为状态栏预留空间 */
             background-color: rgba(247, 247, 247, 0.8);
             backdrop-filter: blur(10px);
             -webkit-backdrop-filter: blur(10px);
@@ -612,10 +542,6 @@
             font-weight: 600;
         }
         
-        
-        #status-bar { 
-            display: none; 
-        }
         #status-bar-time { font-weight: 600; }
         .battery-container { display: flex; align-items: center; gap: 5px; }
         .battery-icon { width: 25px; height: 12px; border: 1px solid white; border-radius: 3px; position: relative; padding: 1px; }
@@ -626,7 +552,6 @@
         @keyframes charge-breath { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
         .screen { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; flex-direction: column; overflow: hidden; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
         .screen.active { opacity: 1; visibility: visible; z-index: 1; }
-        .header { position: relative; z-index: 15; flex-shrink: 0; padding: 15px 20px; background-color: rgba(247, 247, 247, 0.8); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 18px; font-weight: 600; }
         .header .header-actions { display: flex; align-items: center; gap: 15px; }
         .header .back-btn, .header .action-btn { font-size: 24px; cursor: pointer; width: 30px; text-align: center; color: var(--accent-color); display: flex; align-items: center; justify-content: center; }
         
@@ -7457,6 +7382,37 @@
                         <button id="deselect-all-characters-btn" class="form-button-secondary" style="padding: 8px 16px; font-size: 12px;">全不选</button>
                     </div>
                 </div>
+                
+                <!-- 【【【新增】】】 后台活动确认与心跳监控 -->
+                <div class="form-group" style="margin-top: 20px;">
+                    <label style="margin-bottom: 10px;"> 后台活动监控与控制 <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;"> 实时监控后台活动状态，手动启动或停止。 </p>
+                    </label>
+                    <div id="background-activity-monitor" style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 8px; padding: 15px; margin-top: 10px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span style="font-weight: 600; color: #495057;">活动状态:</span>
+                            <span id="activity-status-text" style="color: #dc3545; font-weight: 600;">已停止</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                            <span style="font-weight: 600; color: #495057;">下次心跳:</span>
+                            <span id="next-heartbeat-countdown" style="color: #007bff; font-family: 'Courier New', monospace; font-weight: 600;">--:--</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                            <span style="font-weight: 600; color: #495057;">参与角色:</span>
+                            <span id="active-characters-count" style="color: #6c757d; font-weight: 600;">0 个</span>
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button id="confirm-start-background-btn" class="form-button" style="background: #28a745; border-color: #28a745; margin-top: 0; padding: 10px 16px; flex: 1; font-weight: 600;">
+                                🚀 确认启动后台活动
+                            </button>
+                            <button id="stop-background-btn" class="form-button-secondary" style="background: #dc3545; color: white; border-color: #dc3545; margin-top: 0; padding: 10px 16px; flex: 1; font-weight: 600;">
+                                🛑 停止后台活动
+                            </button>
+                        </div>
+                        <p style="font-size: 11px; color: #6c757d; margin-top: 10px; line-height: 1.4; text-align: center;">
+                            💡 启动前请确认已选择参与角色。系统将按设定间隔自动执行角色独立行动。
+                        </p>
+                    </div>
+                </div>
                 <!-- 保存与导入导出 -->
                 <hr style="margin: 30px 0; opacity: 0.3;">
                 <button class="form-button" id="save-api-settings-btn" style="margin-top: 20px;">保存所有设置</button>
@@ -8480,7 +8436,32 @@
         <div class="form-group">
             <label for="custom-css-input"> 自定义气泡样式 (CSS) <button id="reset-custom-css-btn" type="button" style="background: none; border: 1px solid #ccc; color: #555; font-size: 12px; padding: 2px 8px; border-radius: 5px; cursor: pointer; margin-left: 10px;">重置</button>
             </label>
-            <textarea id="custom-css-input" rows="5" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 16px; resize: vertical;" placeholder="/* 示例：为“我”的气泡添加渐变背景和阴影 */ .message-bubble.user .content { background: linear-gradient(135deg, #a1c4fd, #c2e9fb); box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 15px 4px 15px 15px; }"></textarea>
+            <textarea id="custom-css-input" rows="5" style="width: 100%; margin-top: 8px; font-family: monospace; font-size: 16px; resize: vertical;" placeholder="/* 示例：为"我"的气泡添加渐变背景和阴影 */ .message-bubble.user .content { background: linear-gradient(135deg, #a1c4fd, #c2e9fb); box-shadow: 0 4px 10px rgba(0,0,0,0.1); border-radius: 15px 4px 15px 15px; }"></textarea>
+        </div>
+        
+        <!-- 气泡样式管理 -->
+        <div class="form-group">
+            <label>气泡样式管理</label>
+            <div style="margin-top: 8px;">
+                <!-- 已保存样式选择 -->
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <select id="saved-bubble-styles-select" style="flex-grow: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
+                        <option value="">-- 选择保存的气泡样式 --</option>
+                    </select>
+                    <button id="load-bubble-style-btn" class="form-button-secondary" style="padding: 8px 12px; font-size: 12px;">加载</button>
+                    <button id="delete-bubble-style-btn" class="form-button-secondary" style="padding: 8px 12px; font-size: 12px; background-color: #dc3545; color: white;">删除</button>
+                </div>
+                
+                <!-- 样式名称输入和保存 -->
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" id="bubble-style-name-input" placeholder="输入样式名称..." style="flex-grow: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
+                    <button id="save-current-bubble-style-btn" class="form-button" style="padding: 8px 16px; font-size: 14px; background-color: #007bff; color: white;">保存当前样式</button>
+                </div>
+                
+                <!-- 说明文字 -->
+                <p style="font-size: 12px; color: #666; margin: 5px 0;">保存当前聊天的外观设置 (主题、字体大小、自定义CSS) 为气泡样式, 方便在其他聊天中快速应用。</p>
+                
+            </div>
         </div>
         <div class="form-group">
             <label>实时预览</label>
@@ -8630,22 +8611,6 @@
                     <label>文字图 (给AI理解用的描述，点击图片后可见)</label>
                     <textarea id="post-hidden-text" rows="4" placeholder="在这里写下图片描述..."></textarea>
                 </div>
-                <!-- ======================================================= -->
-                <!-- ▼▼▼ 【【【核心修改】】】这就是为您新增的AI配图开关 ▼▼▼ -->
-                <!-- ======================================================= -->
-                <div class="form-group" style="display: flex; justify-content: space-between; align-items: center;">
-                    <label for="post-use-ai-image-toggle" style="margin-bottom: 0;">
-                        使用AI生成配图
-                        <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
-                            开启后将根据上方描述生成图片，关闭则使用默认占位图。
-                        </p>
-                    </label>
-                    <label class="toggle-switch">
-                        <input type="checkbox" id="post-use-ai-image-toggle" checked>
-                        <span class="slider"></span>
-                    </label>
-                </div>
-                <!-- ▲▲▲ 【【【修改结束】】】 ▲▲▲ -->
             </div>
         </div>
         <div class="modal-footer">
@@ -9513,6 +9478,8 @@ let state = { chats: {}, activeChatId: null, globalSettings: {}, apiConfig: {}, 
                 let selectedFavorites = new Set()
         
         let simulationIntervalId = null;
+        let heartbeatCountdownInterval = null; // 心跳倒计时定时器
+        let nextHeartbeatTime = null; // 下次心跳时间戳
         
                 const defaultAvatar = 'https://i.postimg.cc/PxZrFFFL/o-o-1.jpg';
                 const defaultMyGroupAvatar = 'https://i.postimg.cc/cLPP10Vm/4.jpg';
@@ -10386,7 +10353,7 @@ commentActions.forEach(action => {
                 // ===================================================================
         
         // ▼▼▼ 【请用这个 V29 版本】完整替换旧的 db.version(...) 代码块 ▼▼▼
-            db.version(32).stores({
+            db.version(33).stores({
             chats: '&id, isGroup, groupId, isPinned',
             apiConfig: '&id', 
             globalSettings: '&id', 
@@ -10408,7 +10375,8 @@ commentActions.forEach(action => {
                 renderingRules: '++id, name, chatId',
                 fonts: '++id, name, url, isActive',
                 jsonConfigs: '++id, name, config, createdAt',
-                cssConfigs: '++id, name, css, createTime, updateTime'
+                cssConfigs: '++id, name, css, createTime, updateTime',
+                bubbleStyles: '&name, type, style, description, createdAt, updatedAt'
         }).upgrade(tx => {
             // 这个升级函数会自动处理数据迁移
             console.log('数据库升级到版本31，添加jsonConfigs表');
@@ -12016,6 +11984,21 @@ if (!state.globalSettings.widgetData) {
     // 存储字体和JSON配置数据
     state.fonts = fonts || [];
     state.jsonConfigs = jsonConfigs || [];
+    
+    // 【修复】在数据加载完成后初始化状态栏控制
+    window.state = state; // 确保state可全局访问
+    
+    // 【新增】初始化气泡样式选择列表
+    setTimeout(async () => {
+        if (typeof updateBubbleSelects === 'function') {
+            await updateBubbleSelects();
+            console.log('气泡样式选择列表已初始化');
+        }
+    }, 100);
+    
+    setTimeout(() => {
+        initStatusBarControl();
+    }, 100);
 }
 // ▲▲▲ 替换结束 ▲▲▲
         
@@ -12319,7 +12302,8 @@ if (!state.globalSettings.widgetData) {
                            id="bg-char-${chat.id}" 
                            value="${chat.id}" 
                            ${selectedCharacters.includes(chat.id) ? 'checked' : ''}
-                           style="margin-right: 10px;">
+                           style="margin-right: 10px;"
+                           class="character-selection-checkbox">
                     <label for="bg-char-${chat.id}" style="flex: 1; cursor: pointer; margin: 0;">
                         <div style="display: flex; align-items: center;">
                             <img src="${chat.settings.aiAvatar || 'https://files.catbox.moe/q6z5fc.jpeg'}" 
@@ -12332,6 +12316,26 @@ if (!state.globalSettings.widgetData) {
                     </label>
                 </div>
             `).join('');
+            
+            // 为所有复选框添加事件监听器
+            container.querySelectorAll('.character-selection-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', handleCharacterSelectionChange);
+            });
+        }
+        
+        /**
+         * 处理角色选择变化（实时保存）
+         */
+        async function handleCharacterSelectionChange() {
+            console.log('角色选择发生变化，开始处理...');
+            
+            // 立即保存选择状态
+            await saveBackgroundCharactersSelection();
+            
+            // 更新活动状态显示
+            updateActivityStatus();
+            
+            console.log('角色选择已更新并保存，当前选择:', state.apiConfig.backgroundActivityCharacters);
         }
         
         /**
@@ -12341,6 +12345,9 @@ if (!state.globalSettings.widgetData) {
             const checkboxes = document.querySelectorAll('#background-characters-container input[type="checkbox"]:checked');
             const selectedCharacterIds = Array.from(checkboxes).map(cb => cb.value);
             
+            console.log('找到的复选框数量:', checkboxes.length);
+            console.log('选中的角色ID:', selectedCharacterIds);
+            
             // 【修复】保存到API配置中
             if (!state.apiConfig) state.apiConfig = {};
             state.apiConfig.backgroundActivityCharacters = selectedCharacterIds;
@@ -12349,6 +12356,7 @@ if (!state.globalSettings.widgetData) {
             await db.apiConfig.put(state.apiConfig);
             
             console.log('已保存后台活动角色选择:', selectedCharacterIds);
+            console.log('当前state.apiConfig.backgroundActivityCharacters:', state.apiConfig.backgroundActivityCharacters);
         }
         
         /**
@@ -12376,6 +12384,14 @@ if (!state.globalSettings.widgetData) {
             
             // 3. 【修复】渲染后台活动角色选择列表
             renderBackgroundCharactersList();
+            
+            // 4. 【新增】初始化后台活动状态显示
+            updateActivityStatus();
+            
+            // 5. 【新增】如果后台活动正在运行，启动心跳倒计时显示
+            if (simulationIntervalId) {
+                startHeartbeatCountdown();
+            }
         }
         // ▲▲▲ 替换结束 ▲▲▲
                 window.renderApiSettingsProxy = renderApiSettings;
@@ -15974,7 +15990,24 @@ case 'qzone_post':
                 }
             }
         }
-        // ▲▲▲ 替换结束 ▲▲▲        async function sendSticker(sticker) { if (!state.activeChatId) return; const chat = state.chats[state.activeChatId]; const msg = { role: 'user', content: sticker.url, meaning: sticker.name, timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); document.getElementById('sticker-panel').classList.remove('visible'); }
+        // ▲▲▲ 替换结束 ▲▲▲
+        
+        async function sendSticker(sticker) {
+            if (!state.activeChatId) return;
+            const chat = state.chats[state.activeChatId];
+            const msg = {
+                role: 'user',
+                type: 'sticker',
+                content: sticker.url,
+                meaning: sticker.name,
+                timestamp: Date.now()
+            };
+            chat.history.push(msg);
+            await db.chats.put(chat);
+            appendMessage(msg, chat);
+            renderChatList();
+            document.getElementById('sticker-panel').classList.remove('visible');
+        }
         
                 async function sendUserTransfer() { if (!state.activeChatId) return; const amountInput = document.getElementById('transfer-amount'); const noteInput = document.getElementById('transfer-note'); const amount = parseFloat(amountInput.value); const note = noteInput.value.trim(); if (isNaN(amount) || amount < 0 || amount > 999999) { alert('请输入有效的金额 (0 到 999999 之间)！'); return; } const chat = state.chats[state.activeChatId]; const senderName = chat.isGroup ? (chat.settings.myNickname || '我') : '我'; const receiverName = chat.isGroup ? '群聊' : chat.name; const msg = { role: 'user', type: 'transfer', amount: amount, note: note, senderName, receiverName, timestamp: Date.now() }; chat.history.push(msg); await db.chats.put(chat); appendMessage(msg, chat); renderChatList(); document.getElementById('transfer-modal').classList.remove('visible'); amountInput.value = ''; noteInput.value = ''; }
         /**
@@ -17053,7 +17086,12 @@ function fixUnplayableSongs() {
             if (simulationIntervalId) return;
             const intervalSeconds = state.globalSettings.backgroundActivityInterval || 60;
             // 将旧的固定间隔 45000 替换为动态获取
-            simulationIntervalId = setInterval(runBackgroundSimulationTick, intervalSeconds * 1000); 
+            simulationIntervalId = setInterval(runBackgroundSimulationTick, intervalSeconds * 1000);
+            
+            // 【新增】启动心跳倒计时
+            nextHeartbeatTime = Date.now() + intervalSeconds * 1000;
+            startHeartbeatCountdown();
+            updateActivityStatus();
         }
         
         function stopBackgroundSimulation() {
@@ -17061,7 +17099,180 @@ function fixUnplayableSongs() {
                 clearInterval(simulationIntervalId);
                 simulationIntervalId = null;
             }
+            
+            // 【新增】停止心跳倒计时
+            if (heartbeatCountdownInterval) {
+                clearInterval(heartbeatCountdownInterval);
+                heartbeatCountdownInterval = null;
+            }
+            nextHeartbeatTime = null;
+            updateActivityStatus();
         }
+        
+        // ▼▼▼ 【全新】后台活动心跳倒计时功能 ▼▼▼
+        
+        /**
+         * 启动心跳倒计时显示
+         */
+        function startHeartbeatCountdown() {
+            if (heartbeatCountdownInterval) {
+                clearInterval(heartbeatCountdownInterval);
+            }
+            
+            heartbeatCountdownInterval = setInterval(updateHeartbeatDisplay, 1000);
+        }
+        
+        /**
+         * 更新心跳倒计时显示
+         */
+        function updateHeartbeatDisplay() {
+            const countdownElement = document.getElementById('next-heartbeat-countdown');
+            if (!countdownElement) return;
+            
+            if (!nextHeartbeatTime || !simulationIntervalId) {
+                countdownElement.textContent = '--:--';
+                countdownElement.style.color = '#6c757d';
+                return;
+            }
+            
+            const now = Date.now();
+            const remaining = Math.max(0, nextHeartbeatTime - now);
+            
+            if (remaining <= 0) {
+                countdownElement.textContent = '心跳中...';
+                countdownElement.style.color = '#dc3545';
+                return;
+            }
+            
+            const minutes = Math.floor(remaining / 60000);
+            const seconds = Math.floor((remaining % 60000) / 1000);
+            
+            countdownElement.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            
+            // 根据剩余时间改变颜色
+            if (remaining < 10000) { // 少于10秒，红色
+                countdownElement.style.color = '#dc3545';
+            } else if (remaining < 30000) { // 少于30秒，橙色
+                countdownElement.style.color = '#fd7e14';
+            } else { // 正常状态，蓝色
+                countdownElement.style.color = '#007bff';
+            }
+        }
+        
+        /**
+         * 更新后台活动状态显示
+         */
+        function updateActivityStatus() {
+            const statusElement = document.getElementById('activity-status-text');
+            const countElement = document.getElementById('active-characters-count');
+            
+            if (!statusElement || !countElement) return;
+            
+            // 更新活动状态
+            if (simulationIntervalId) {
+                statusElement.textContent = '运行中';
+                statusElement.style.color = '#28a745';
+            } else {
+                statusElement.textContent = '已停止';
+                statusElement.style.color = '#dc3545';
+            }
+            
+            // 更新参与角色数量
+            const selectedCharacters = state.apiConfig?.backgroundActivityCharacters || [];
+            countElement.textContent = `${selectedCharacters.length} 个`;
+            
+            if (selectedCharacters.length > 0) {
+                countElement.style.color = '#28a745';
+            } else {
+                countElement.style.color = '#dc3545';
+            }
+        }
+        
+        /**
+         * 确认启动后台活动
+         */
+        async function confirmStartBackgroundActivity() {
+            console.log('开始检查后台活动启动条件...');
+            
+            // 检查是否有选中的角色 - 从界面直接读取
+            const checkboxes = document.querySelectorAll('#background-characters-container input[type="checkbox"]:checked');
+            const selectedCharacters = Array.from(checkboxes).map(cb => cb.value);
+            console.log('从界面读取的选中角色数量:', selectedCharacters.length);
+            console.log('选中的角色ID:', selectedCharacters);
+            
+            if (selectedCharacters.length === 0) {
+                console.log('没有选中任何角色，显示错误提示');
+                await showCustomAlert('启动失败', '请先选择至少一个参与后台活动的角色！');
+                return;
+            }
+            
+            // 检查基本配置 - 先从界面读取当前值
+            const proxyUrl = document.getElementById('proxy-url').value.trim();
+            const apiKey = document.getElementById('api-key').value.trim();
+            const model = document.getElementById('model-select').value;
+            
+            console.log('从界面读取的API配置:');
+            console.log('proxyUrl:', proxyUrl);
+            console.log('apiKey:', apiKey ? '已填写' : '未填写');
+            console.log('model:', model);
+            
+            if (!proxyUrl || !apiKey || !model) {
+                await showCustomAlert('配置错误', 'API设置不完整，请先配置代理地址、密钥和模型！');
+                return;
+            }
+            
+            // 显示确认对话框
+            const intervalMinutes = Math.round((state.globalSettings.backgroundActivityInterval || 60) / 60 * 10) / 10;
+            const confirmed = await showCustomConfirm(
+                '确认启动后台活动',
+                `即将启动后台活动系统：\n\n• 参与角色：${selectedCharacters.length} 个\n• 活动间隔：${intervalMinutes} 分钟\n• 每次心跳将消耗 API 调用\n\n确定要启动吗？`,
+                { 
+                    confirmText: '启动',
+                    confirmButtonClass: 'btn-success'
+                }
+            );
+            
+            if (confirmed) {
+                // 启动后台活动
+                state.globalSettings.enableBackgroundActivity = true;
+                document.getElementById('background-activity-switch').checked = true;
+                
+                startBackgroundSimulation();
+                await showCustomAlert('启动成功', '后台活动已启动！系统将按设定间隔自动执行角色行动。');
+                console.log(`后台活动已手动启动，间隔: ${state.globalSettings.backgroundActivityInterval}秒`);
+            }
+        }
+        
+        /**
+         * 停止后台活动
+         */
+        async function stopBackgroundActivity() {
+            if (!simulationIntervalId) {
+                await showCustomAlert('提示', '后台活动未在运行！');
+                return;
+            }
+            
+            const confirmed = await showCustomConfirm(
+                '确认停止后台活动',
+                '确定要停止后台活动吗？\n\n停止后，所有角色将不再进行自动独立行动。',
+                { 
+                    confirmText: '停止',
+                    confirmButtonClass: 'btn-danger'
+                }
+            );
+            
+            if (confirmed) {
+                state.globalSettings.enableBackgroundActivity = false;
+                document.getElementById('background-activity-switch').checked = false;
+                
+                stopBackgroundSimulation();
+                await showCustomAlert('已停止', '后台活动已停止！');
+                console.log("后台活动已手动停止。");
+            }
+        }
+        
+        // ▲▲▲ 后台活动心跳倒计时功能结束 ▲▲▲
+        
         // ▲▲▲ 粘贴结束 ▲▲▲
         
         // ▼▼▼ 【最终修复版】请用这个全新的函数，完整替换旧的 runBackgroundSimulationTick ▼▼▼
@@ -17074,10 +17285,25 @@ function fixUnplayableSongs() {
                 stopBackgroundSimulation();
                 return;
             }
+            
+            // 【新增】重置下次心跳时间
+            const intervalSeconds = state.globalSettings.backgroundActivityInterval || 60;
+            nextHeartbeatTime = Date.now() + intervalSeconds * 1000;
+            
+            // 【核心修复】只处理用户选择的角色
+            const selectedCharacters = state.apiConfig?.backgroundActivityCharacters || [];
+            if (selectedCharacters.length === 0) {
+                console.log("没有选择参与后台活动的角色，跳过本次心跳");
+                return;
+            }
+            
+            console.log(`本次心跳将处理 ${selectedCharacters.length} 个选中的角色:`, selectedCharacters);
         
-            // --- 1. 处理所有单聊 ---
-            const allSingleChats = Object.values(state.chats).filter(chat => !chat.isGroup);
-            allSingleChats.forEach(chat => {
+            // --- 1. 处理选中的单聊角色 ---
+            const selectedSingleChats = Object.values(state.chats).filter(chat => 
+                !chat.isGroup && selectedCharacters.includes(chat.id)
+            );
+            selectedSingleChats.forEach(chat => {
                 // 【【【核心修改：已删除对 lastMessage.role === 'user' 的检查】】】
                 // 现在AI不再关心最后一条消息是谁发的了！
         
@@ -17101,9 +17327,11 @@ function fixUnplayableSongs() {
                 }
             });
         
-            // --- 2. 【核心新增】处理所有群聊 ---
-            const allGroupChats = Object.values(state.chats).filter(chat => chat.isGroup);
-            allGroupChats.forEach(chat => {
+            // --- 2. 【核心修复】处理选中的群聊 ---
+            const selectedGroupChats = Object.values(state.chats).filter(chat => 
+                chat.isGroup && selectedCharacters.includes(chat.id)
+            );
+            selectedGroupChats.forEach(chat => {
                 // 确保不在当前打开的聊天窗口，且通过随机概率检查
                 if (chat.id !== state.activeChatId && Math.random() < 0.10) { // 群聊几率可以设低一些，比如10%，避免太吵
                     console.log(`群聊 "${chat.name}" 被唤醒，准备独立行动...`);
@@ -17938,7 +18166,7 @@ ${longTermMemoryContext}
                 ...recentHistoryForPayload.map(msg => {
                     const sender = msg.role === 'user' ? myNickname : getDisplayNameInGroup(chat, msg.senderName);
                     let content = msg.content;
-                    if (msg.type === 'ai_image' || msg.type === 'user_photo') {
+                    if (msg.type === 'user_photo') {
                         content = `[发送了一张图片，描述为：'${msg.content}']`;
                     } else if (msg.type === 'voice_message') {
                         content = `[发送了一条语音，内容是：'${msg.content}']`;
@@ -18092,14 +18320,6 @@ ${longTermMemoryContext}
                                 }
                             }
                             break;
-                        case 'ai_image':
-                            aiMessage = {
-                                ...baseMessage,
-                                type: 'ai_image',
-                                content: action.description, 
-                                image_prompt: action.image_prompt 
-                            };
-                            break;
                         default:
                             if (action.type === 'poll') {
                                  const pollOptions = typeof action.options === 'string' 
@@ -18127,7 +18347,7 @@ ${longTermMemoryContext}
                         chat.history.push(aiMessage);
                         if (!notificationSender) {
                             notificationSender = senderDisplayName;
-                            notificationContent = aiMessage.type === 'ai_image' ? '[图片]' : (aiMessage.content || `[${aiMessage.type}]`);
+                            notificationContent = aiMessage.content || `[${aiMessage.type}]`;
                         }
                     }
                     hasPerformedMajorAction = true;
@@ -18461,8 +18681,6 @@ ${longTermMemoryContext}
             // 【核心修改1】在这里添加 'link' 模板
             const templates = {
                 voice: { type: 'voice_message', content: '在这里输入语音内容' },
-                        // 在图片模板中，默认开启AI生图
-        image: { type: 'ai_image', description: '在这里输入图片描述', use_ai_image: true },
                 transfer: { type: 'transfer', amount: 5.20, note: '一点心意' },
                 link: { type: 'share_link', title: '文章标题', description: '文章摘要...', source_name: '来源网站', content: '文章完整内容...' }
             };
@@ -18472,9 +18690,8 @@ ${longTermMemoryContext}
                 <textarea>${initialContent}</textarea>
                 <div class="format-helpers">
                     <button class="format-btn" data-template='${JSON.stringify(templates.voice)}'>语音</button>
-                    <button class="format-btn" data-template='${JSON.stringify(templates.image)}'>图片</button>
                     <button class="format-btn" data-template='${JSON.stringify(templates.transfer)}'>转账</button>
-                    <!-- 【核心修改2】在这里添加新的“链接”按钮 -->
+                    <!-- 【核心修改2】在这里添加新的"链接"按钮 -->
                     <button class="format-btn" data-template='${JSON.stringify(templates.link)}'>链接</button>
                 </div>
             `;
@@ -22995,9 +23212,6 @@ function updateMusicProgressBar() {
                     case 'sticker':
                         aiMessage = { ...baseMessage, type: 'sticker', content: msgData.url, meaning: msgData.meaning || '' };
                         break;
-                    case 'ai_image':
-                        aiMessage = { ...baseMessage, type: 'ai_image', content: msgData.description };
-                        break;
                     case 'voice_message':
                         aiMessage = { ...baseMessage, type: 'voice_message', content: msgData.content };
                         break;
@@ -26801,6 +27015,9 @@ audioPlayer.addEventListener('play', () => {
                 console.log("后台活动模拟已停止。");
             }
             
+            // 【新增】更新后台活动状态显示
+            updateActivityStatus();
+            
             alert('所有API与后台设置已保存!'); 
         });
         // ▲▲▲ 替换结束 ▲▲▲
@@ -26960,12 +27177,6 @@ audioPlayer.addEventListener('play', () => {
                 return;
             }
         
-            const aiImage = e.target.closest('.ai-generated-image');
-            if (aiImage) {
-                const description = aiImage.dataset.description;
-                if (description) showCustomAlert('照片描述', description);
-                return;
-            }
         
             const quoteBlock = e.target.closest('.quoted-message');
             if (quoteBlock && quoteBlock.dataset.originalTimestamp) {
@@ -29246,6 +29457,54 @@ async function handlePostClick(e) {
         document.getElementById('import-json-btn').addEventListener('click', importJsonBeautification);
         // ▲▲▲ JSON导入导出功能事件绑定结束 ▲▲▲
         
+        // ▼▼▼ 【全新】表情包面板事件绑定 ▼▼▼
+        document.getElementById('open-sticker-panel-btn').addEventListener('click', () => {
+            document.getElementById('sticker-panel').classList.add('visible');
+            renderUserStickers();
+        });
+        
+        document.getElementById('close-sticker-panel-btn').addEventListener('click', () => {
+            document.getElementById('sticker-panel').classList.remove('visible');
+        });
+        
+        document.getElementById('sticker-grid').addEventListener('click', (e) => {
+            const stickerItem = e.target.closest('.sticker-item');
+            if (stickerItem) {
+                const sticker = {
+                    url: stickerItem.dataset.url,
+                    name: stickerItem.dataset.name || '表情'
+                };
+                sendSticker(sticker);
+            }
+        });
+        
+        document.getElementById('add-sticker-url-btn').addEventListener('click', async () => {
+            const url = await showCustomPrompt('添加表情', '请输入表情URL');
+            if (url && url.trim()) {
+                const name = await showCustomPrompt('表情名称', '请输入表情名称（可选）', '');
+                await addUserSticker(url.trim(), name || '自定义表情');
+                renderUserStickers();
+            }
+        });
+        
+        document.getElementById('upload-sticker-btn').addEventListener('click', () => {
+            document.getElementById('sticker-upload-input').click();
+        });
+        
+        document.getElementById('sticker-upload-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    const dataUrl = await fileToBase64(file);
+                    await addUserSticker(dataUrl, file.name.replace(/\.[^/.]+$/, ''));
+                    renderUserStickers();
+                } catch (error) {
+                    alert('上传失败，请重试！');
+                }
+            }
+        });
+        // ▲▲▲ 表情包面板事件绑定结束 ▲▲▲
+        
         // ▼▼▼ 在 init() 的事件监听区域，粘贴这段【新代码】▼▼▼
         document.getElementById('icon-settings-grid').addEventListener('click', async (e) => {
             // 检查是否点击了更换按钮或图片本身
@@ -29901,6 +30160,18 @@ if (placeholder) {
                         // (可选) 如果希望点击重置后立刻看到效果，可以加上下面这行
                         // applyGlobalCss('');
                     });
+        
+        // ▼▼▼ 气泡样式管理事件监听器 ▼▼▼
+        document.getElementById('save-current-bubble-style-btn').addEventListener('click', saveCurrentBubbleStyle);
+        document.getElementById('load-bubble-style-btn').addEventListener('click', () => {
+            const styleId = document.getElementById('saved-bubble-styles-select').value;
+            loadBubbleStyle(styleId);
+        });
+        document.getElementById('delete-bubble-style-btn').addEventListener('click', () => {
+            const styleId = document.getElementById('saved-bubble-styles-select').value;
+            deleteBubbleStyle(styleId);
+        });
+        // ▲▲▲ 气泡样式管理事件监听器结束 ▲▲▲
         // ▼▼▼ 【最终修复版】请用这个全新的事件监听器，替换旧的长期记忆功能事件绑定 ▼▼▼
         // 聊天界面顶部新按钮 -> 打开全屏页面
         document.getElementById('open-memory-screen-btn').addEventListener('click', openLongTermMemoryScreen);
@@ -30160,6 +30431,11 @@ document.getElementById('memory-list-container').addEventListener('click', (e) =
         });
         // ▲▲▲ 新增事件绑定结束 ▲▲▲
         
+        // ▼▼▼ 【全新功能】后台活动确认与控制按钮事件绑定 ▼▼▼
+        document.getElementById('confirm-start-background-btn').addEventListener('click', confirmStartBackgroundActivity);
+        document.getElementById('stop-background-btn').addEventListener('click', stopBackgroundActivity);
+        // ▲▲▲ 后台活动控制按钮事件绑定结束 ▲▲▲
+        
         // ▼▼▼ 【全新功能】CSS配置保存相关事件绑定 ▼▼▼
         document.getElementById('save-css-config-btn').addEventListener('click', saveCssConfig);
         // ▲▲▲ 新增事件绑定结束 ▲▲▲
@@ -30237,8 +30513,89 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
     applyStatusBarVisibility();
 });
 // ▲▲▲ 新增事件结束 ▲▲▲
+
+                    // 初始化状态栏
+                    if (state.globalSettings && typeof state.globalSettings.showStatusBar !== 'undefined') {
+                        document.getElementById('status-bar-toggle-switch').checked = state.globalSettings.showStatusBar;
+                        applyStatusBarVisibility();
+                    }
+                    
                     showScreen('home-screen');
                 }
+                
+                /**
+                 * 状态栏切换函数
+                 */
+                function toggleStatusBar() {
+                    if (!state || !state.globalSettings) {
+                        console.warn('状态或全局设置未初始化');
+                        return;
+                    }
+                    state.globalSettings.showStatusBar = !state.globalSettings.showStatusBar;
+                    if (db && db.globalSettings) {
+                        db.globalSettings.put(state.globalSettings);
+                    }
+                    applyStatusBarVisibility();
+                    console.log('状态栏切换:', state.globalSettings.showStatusBar ? '显示' : '隐藏');
+                }
+                
+                /**
+                 * 应用状态栏可见性
+                 */
+                function applyStatusBarVisibility() {
+                    const phoneScreen = document.getElementById('phone-screen');
+                    if (!phoneScreen) {
+                        console.warn('找不到phone-screen元素');
+                        return;
+                    }
+                    
+                    const showStatusBar = state.globalSettings ? state.globalSettings.showStatusBar : false;
+                    
+                    if (showStatusBar) {
+                        phoneScreen.classList.add('status-bar-visible');
+                        console.log('已添加status-bar-visible类');
+                        updateStatusBar();
+                    } else {
+                        phoneScreen.classList.remove('status-bar-visible');
+                        console.log('已移除status-bar-visible类');
+                    }
+                }
+                
+                /**
+                 * 更新状态栏内容
+                 */
+                function updateStatusBar() {
+                    const timeElement = document.getElementById('status-bar-time');
+                    const batteryElement = document.getElementById('status-bar-battery');
+                    
+                    if (timeElement) {
+                        const now = new Date();
+                        const timeString = now.toLocaleTimeString('zh-CN', { 
+                            hour: '2-digit', 
+                            minute: '2-digit',
+                            hour12: false 
+                        });
+                        timeElement.textContent = timeString;
+                    }
+                    
+                    if (batteryElement) {
+                        // 模拟电池电量
+                        const batteryLevel = Math.floor(Math.random() * 20) + 80; // 80-100%之间
+                        const batteryText = batteryElement.querySelector('.battery-text');
+                        const batteryLevelBar = batteryElement.querySelector('.battery-level');
+                        
+                        if (batteryText) {
+                            batteryText.textContent = batteryLevel + '%';
+                        }
+                        
+                        if (batteryLevelBar) {
+                            batteryLevelBar.style.width = batteryLevel + '%';
+                        }
+                    }
+                }
+                
+                // 启动状态栏时间更新器
+                setInterval(updateStatusBar, 60000); // 每分钟更新一次时间
         
                 // ▼▼▼ 【全新】字体批量导入功能函数 ▼▼▼
                 
@@ -30569,6 +30926,100 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                 
                 // ▲▲▲ 字体批量导入功能函数结束 ▲▲▲
                 
+                // ▼▼▼ 【全新】表情包管理功能函数 ▼▼▼
+                
+                /**
+                 * 渲染用户表情包网格
+                 */
+                async function renderUserStickers() {
+                    const stickerGrid = document.getElementById('sticker-grid');
+                    if (!stickerGrid) return;
+                    
+                    stickerGrid.innerHTML = '';
+                    
+                    if (state.userStickers.length === 0) {
+                        stickerGrid.innerHTML = '<div style="text-align: center; color: #999; padding: 20px;">暂无表情包，点击上方按钮添加</div>';
+                        return;
+                    }
+                    
+                    state.userStickers.forEach((sticker, index) => {
+                        const stickerItem = document.createElement('div');
+                        stickerItem.className = 'sticker-item';
+                        stickerItem.dataset.url = sticker.url;
+                        stickerItem.dataset.name = sticker.name;
+                        stickerItem.style.backgroundImage = `url(${sticker.url})`;
+                        stickerItem.title = sticker.name;
+                        
+                        // 添加删除按钮（长按或右键显示）
+                        stickerItem.addEventListener('contextmenu', (e) => {
+                            e.preventDefault();
+                            deleteUserSticker(index);
+                        });
+                        
+                        stickerGrid.appendChild(stickerItem);
+                    });
+                }
+                
+                /**
+                 * 添加用户表情包
+                 */
+                async function addUserSticker(url, name) {
+                    try {
+                        const newSticker = {
+                            url: url,
+                            name: name || '表情',
+                            timestamp: Date.now()
+                        };
+                        
+                        state.userStickers.push(newSticker);
+                        
+                        // 保存到数据库
+                        await db.userStickers.add(newSticker);
+                        
+                        console.log('表情包已添加:', newSticker);
+                        
+                    } catch (error) {
+                        console.error('添加表情包失败:', error);
+                        alert('添加表情包失败！');
+                    }
+                }
+                
+                /**
+                 * 删除用户表情包
+                 */
+                async function deleteUserSticker(index) {
+                    try {
+                        const confirmed = await showCustomConfirm('删除表情', '确定要删除这个表情包吗？');
+                        if (!confirmed) return;
+                        
+                        const sticker = state.userStickers[index];
+                        if (sticker && sticker.id) {
+                            await db.userStickers.delete(sticker.id);
+                        }
+                        
+                        state.userStickers.splice(index, 1);
+                        renderUserStickers();
+                        
+                    } catch (error) {
+                        console.error('删除表情包失败:', error);
+                        alert('删除表情包失败！');
+                    }
+                }
+                
+                /**
+                 * 文件转Base64
+                 */
+                function fileToBase64(file) {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result);
+                        reader.onerror = () => reject(reader.error);
+                        reader.readAsDataURL(file);
+                    });
+                }
+                
+                // ▲▲▲ 表情包管理功能函数结束 ▲▲▲
+                
                 // ▼▼▼ 【全新】字体设置功能函数 ▼▼▼
                 
                 /**
@@ -30811,6 +31262,386 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                 }
                 
                 // ▲▲▲ CSS配置保存功能函数结束 ▲▲▲
+                
+                // ▼▼▼ 气泡样式管理函数 ▼▼▼
+                
+                /**
+                 * 保存当前气泡样式
+                 */
+                async function saveCurrentBubbleStyle() {
+                    const styleName = document.getElementById('bubble-style-name-input').value.trim();
+                    if (!styleName) {
+                        await showCustomAlert('提示', '请输入样式名称');
+                        return;
+                    }
+                    
+                    try {
+                        const chat = state.chats[state.activeChatId];
+                        if (!chat) return;
+                        
+                        // 获取当前CSS输入框的内容
+                        const customCssInput = document.getElementById('custom-css-input');
+                        const currentCustomCss = customCssInput ? customCssInput.value.trim() : '';
+                        
+                        console.log('保存的气泡样式CSS内容:', currentCustomCss);
+                        
+                        const currentSettings = {
+                            theme: chat.settings.theme || 'default',
+                            fontSize: chat.settings.fontSize || 13,
+                            customCss: currentCustomCss || chat.settings.customCss || ''
+                        };
+                        
+                        const bubbleStyle = {
+                            name: styleName,
+                            type: 'combined',
+                            style: JSON.stringify(currentSettings),
+                            description: '综合气泡样式',
+                            createdAt: Date.now(),
+                            updatedAt: Date.now()
+                        };
+                        
+                        console.log('保存的气泡样式数据:', bubbleStyle);
+                        
+                        // 使用put而不是add，避免重复键错误
+                        await db.bubbleStyles.put(bubbleStyle);
+                        
+                        // 同时更新当前聊天的设置
+                        chat.settings.customCss = currentCustomCss;
+                        await db.chats.put(chat);
+                        
+                        // 强制更新选择列表
+                        setTimeout(async () => {
+                            await updateBubbleSelects();
+                            document.getElementById('bubble-style-name-input').value = '';
+                            await showCustomAlert('成功', `已保存气泡样式：${styleName}`);
+                        }, 100);
+                        
+                    } catch (error) {
+                        console.error('保存气泡样式失败:', error);
+                        await showCustomAlert('错误', '保存失败，请重试');
+                    }
+                }
+
+                /**
+                 * 加载气泡样式
+                 */
+                async function loadBubbleStyle(styleId) {
+                    try {
+                        console.log('尝试加载气泡样式，styleId:', styleId, '类型:', typeof styleId);
+                        
+                        if (!styleId || styleId === '') {
+                            await showCustomAlert('提示', '请先选择一个样式');
+                            return;
+                        }
+                        
+                        // 尝试将 styleId 转换为数字
+                        const numericStyleId = parseInt(styleId);
+                        console.log('转换后的数字ID:', numericStyleId);
+                        
+                        let bubbleStyle;
+                        if (isNaN(numericStyleId)) {
+                            // 如果不是数字，尝试按名称查找
+                            console.log('按名称查找样式:', styleId);
+                            bubbleStyle = await db.bubbleStyles.where('name').equals(styleId).first();
+                        } else {
+                            // 如果是数字，按ID查找
+                            bubbleStyle = await db.bubbleStyles.get(numericStyleId);
+                        }
+                        console.log('从数据库获取的样式:', bubbleStyle);
+                        
+                        if (!bubbleStyle) {
+                            await showCustomAlert('错误', '样式不存在');
+                            return;
+                        }
+                        
+                        const settings = JSON.parse(bubbleStyle.style);
+                        const chat = state.chats[state.activeChatId];
+                        if (!chat) return;
+                        
+                        // 应用气泡样式并保存到当前聊天设置
+                        if (settings.customCss) {
+                            console.log('准备应用气泡样式:', bubbleStyle.name);
+                            console.log('CSS内容长度:', settings.customCss.length);
+                            applyBubbleStyle(settings.customCss);
+                            
+                            // 保存到当前聊天设置中
+                            chat.settings.customCss = settings.customCss;
+                            await db.chats.put(chat);
+                        } else {
+                            console.log('该样式没有自定义CSS内容');
+                        }
+                        
+                        // 更新UI（只更新主题和字体大小，不覆盖自定义CSS）
+                        const themeRadio = document.querySelector(`input[name="theme-select"][value="${settings.theme}"]`);
+                        if (themeRadio) themeRadio.checked = true;
+                        
+                        const fontSizeSlider = document.getElementById('font-size-slider');
+                        if (fontSizeSlider) {
+                            fontSizeSlider.value = settings.fontSize;
+                            document.getElementById('font-size-value').textContent = `${settings.fontSize}px`;
+                        }
+                        
+                        // 更新自定义CSS输入框
+                        const customCssInput = document.getElementById('custom-css-input');
+                        if (customCssInput) {
+                            customCssInput.value = settings.customCss || '';
+                            console.log('已更新CSS输入框内容:', settings.customCss);
+                        }
+                        
+                        // 应用样式
+                        updateSettingsPreview();
+                        
+                        await showCustomAlert('成功', `已加载气泡样式：${bubbleStyle.name}`);
+                        
+                    } catch (error) {
+                        console.error('加载气泡样式失败:', error);
+                        await showCustomAlert('错误', '加载失败，请重试');
+                    }
+                }
+
+                /**
+                 * 删除气泡样式
+                 */
+                async function deleteBubbleStyle(styleId) {
+                    try {
+                        if (!styleId || styleId === '') {
+                            await showCustomAlert('提示', '请先选择一个样式');
+                            return;
+                        }
+                        
+                        // 确保 styleId 是数字
+                        const numericStyleId = parseInt(styleId);
+                        if (isNaN(numericStyleId)) {
+                            await showCustomAlert('错误', '无效的样式ID');
+                            return;
+                        }
+                        
+                        const bubbleStyle = await db.bubbleStyles.get(numericStyleId);
+                        if (!bubbleStyle) {
+                            await showCustomAlert('错误', '样式不存在');
+                            return;
+                        }
+                        
+                        const confirmed = await showCustomConfirm('确认删除', `确定要删除气泡样式"${bubbleStyle.name}"吗？`);
+                        if (!confirmed) return;
+                        
+                        await db.bubbleStyles.delete(numericStyleId);
+                        await updateBubbleSelects();
+                        
+                        await showCustomAlert('成功', '已删除气泡样式');
+                        
+                    } catch (error) {
+                        console.error('删除气泡样式失败:', error);
+                        await showCustomAlert('错误', '删除失败，请重试');
+                    }
+                }
+
+                /**
+                 * 更新气泡样式选择列表
+                 */
+                async function updateBubbleSelects() {
+                    try {
+                        // 使用each方法而不是toArray，避免Promise卡住
+                        const savedSelect = document.getElementById('saved-bubble-styles-select');
+                        if (!savedSelect) return;
+                        
+                        // 清空现有选项
+                        savedSelect.innerHTML = '<option value="">-- 选择保存的气泡样式 --</option>';
+                        
+                        // 使用each方法遍历
+                        await db.bubbleStyles.each(bubble => {
+                            if (bubble && bubble.id && bubble.name) {
+                                const option = document.createElement('option');
+                                option.value = bubble.id;
+                                option.textContent = bubble.name;
+                                console.log('添加选项:', 'ID:', bubble.id, '名称:', bubble.name);
+                                savedSelect.appendChild(option);
+                            }
+                        });
+                        
+                        console.log('已更新气泡样式列表');
+                    } catch (error) {
+                        console.error('更新气泡选择列表失败:', error);
+                    }
+                }
+                
+                /**
+                 * 应用气泡样式的函数
+                 */
+                function applyBubbleStyle(cssCode) {
+                    // 移除旧的气泡样式
+                    const oldStyle = document.getElementById('bubble-style-css');
+                    if (oldStyle) {
+                        oldStyle.remove();
+                    }
+                    
+                    // 创建新的样式元素
+                    const styleElement = document.createElement('style');
+                    styleElement.id = 'bubble-style-css';
+                    styleElement.textContent = cssCode;
+                    document.head.appendChild(styleElement);
+                    
+                    console.log('已应用气泡样式:', cssCode.substring(0, 100) + '...');
+                }
+                
+                /**
+                 * 清除气泡样式的函数
+                 */
+                function clearBubbleStyle() {
+                    const oldStyle = document.getElementById('bubble-style-css');
+                    if (oldStyle) {
+                        oldStyle.remove();
+                        console.log('已清除气泡样式');
+                    }
+                }
+                
+                // 临时测试函数 - 保存完整的气泡样式
+                async function testSaveBubbleStyle() {
+                    try {
+                        const bubbleStyle = {
+                            name: '气泡样式',
+                            type: 'combined',
+                            style: JSON.stringify({
+                                theme: 'default',
+                                fontSize: 13,
+                                customCss: `/* 气泡样式 */
+
+/* --- 1. 消息整体布局与时间戳 --- */
+.message-wrapper {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.timestamp {
+  position: relative;
+  font-size: 9px;
+  font-family: 'CustomFon', sans-serif;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+  margin-bottom: 5px;
+}
+
+.message-wrapper.user .timestamp::before {
+  content: '已读';
+  position: absolute;
+  bottom: 40%;
+  right: 0;
+  margin-bottom: 6px;
+  font-size: 9px;
+  color: var(--text-secondary);
+  font-weight: 400;
+}
+
+/* --- 2. 气泡样式 --- */
+.message-bubble .content {
+  position: relative;
+  max-width: 95%;
+  padding: 8px 13px;
+  line-height: 1.3;
+  word-break: break-word;
+  border-radius: 18px;
+  box-shadow: 
+    0 3px 5px rgba(100, 100, 100, 0.15),
+    inset 0 2px 5px rgba(0, 0, 0, 0.05),
+    inset 0 -3px 7px rgba(255, 255, 255, 0.9);
+  overflow: hidden; 
+}
+
+.message-bubble .content::before {
+  content: '';
+  position: absolute;
+  top: 2px; 
+  left: 0;
+  width: 100%;
+  height: 10px;
+  clip-path: path('M 20% 0 L 80% 0 C 95% 10%, 100% 40%, 90% 100% L 10% 100% C 0% 40%, 5% 10%, 20% 0 Z');
+  background: linear-gradient(
+    to bottom, 
+    rgba(255, 255, 255, 1.0),
+    rgba(255, 255, 255, 0)
+  );
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.message-bubble.ai .content {
+  background-color: #eeecea;
+  color: #4a4a4a;
+}
+.message-bubble.user .content {
+  background-color: #ffecf2;
+  color: #a83a60; 
+}
+
+/* --- 3. 气泡尾巴贴纸 --- */
+.message-bubble.user,
+.message-bubble.ai {
+  position: relative;
+}
+
+.message-bubble::after {
+  content: '';
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+.message-bubble.user::after {
+  top: 5px;
+  right: 36px;
+  background-image: url('https://i.postimg.cc/wTFp42HF/IMG-9272.png');
+}
+
+.message-bubble.ai::after {
+  top: 8px;
+  left: 37px;
+  background-image: url('https://i.postimg.cc/Kj32Hk7f/IMG-9276.png');
+}
+/* 特殊消息样式 */
+
+.message-bubble .content:has(img:only-child),
+.message-bubble .content:has(.transfer-card),
+.message-bubble .content:has(.link-share-card),
+.message-bubble .content:has(.waimai-card),
+.message-bubble .content:has(.poll-card) {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}`
+                            }),
+                            description: '气泡样式',
+                            createdAt: Date.now(),
+                            updatedAt: Date.now()
+                        };
+                        
+                        await db.bubbleStyles.add(bubbleStyle);
+                        await updateBubbleSelects();
+                        console.log('测试气泡样式已保存');
+                        await showCustomAlert('成功', '测试气泡样式已保存');
+                        
+                    } catch (error) {
+                        console.error('保存测试气泡样式失败:', error);
+                        await showCustomAlert('错误', '保存失败');
+                    }
+                }
+                
+                // 暴露函数到全局作用域
+                window.testSaveBubbleStyle = testSaveBubbleStyle;
+                window.saveCurrentBubbleStyle = saveCurrentBubbleStyle;
+                window.loadBubbleStyle = loadBubbleStyle;
+                window.deleteBubbleStyle = deleteBubbleStyle;
+                window.applyBubbleStyle = applyBubbleStyle;
+                window.clearBubbleStyle = clearBubbleStyle;
+                window.db = db;
+                
+                // ▲▲▲ 气泡样式管理函数结束 ▲▲▲
                 
                 // ▼▼▼ 【全新】JSON导入导出功能函数 ▼▼▼
                 

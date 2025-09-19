@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>气泡样式测试</title>
+    <script src="https://unpkg.com/dexie/dist/dexie.js"></script>
+</head>
+<body>
+    <h1>气泡样式数据库测试</h1>
+    <div id="test-results"></div>
+    
+    <script>
+        // 创建测试数据库
+        const db = new Dexie('TestBubbleDB');
+        db.version(1).stores({
+            bubbleStyles: '&name, type, style, description, createdAt, updatedAt'
+        });
+        
+        async function testBubbleStyles() {
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<p>开始测试...</p>';
+            
+            try {
+                // 1. 测试保存气泡样式
+                console.log('测试1: 保存气泡样式');
+                const testStyle = {
+                    name: '测试样式1',
+                    type: 'combined',
+                    style: JSON.stringify({
+                        theme: 'default',
+                        fontSize: 14,
+                        customCss: '.test { color: red; }'
+                    }),
+                    description: '测试用的气泡样式',
+                    createdAt: Date.now(),
+                    updatedAt: Date.now()
+                };
+                
+                await db.bubbleStyles.put(testStyle);
+                results.innerHTML += '<p>✅ 保存气泡样式成功</p>';
+                
+                // 2. 测试读取气泡样式
+                console.log('测试2: 读取气泡样式');
+                const savedStyle = await db.bubbleStyles.get('测试样式1');
+                if (savedStyle) {
+                    results.innerHTML += '<p>✅ 读取气泡样式成功: ' + savedStyle.name + '</p>';
+                } else {
+                    results.innerHTML += '<p>❌ 读取气泡样式失败</p>';
+                }
+                
+                // 3. 测试列出所有气泡样式
+                console.log('测试3: 列出所有气泡样式');
+                const allStyles = await db.bubbleStyles.toArray();
+                results.innerHTML += '<p>✅ 找到 ' + allStyles.length + ' 个气泡样式</p>';
+                
+                allStyles.forEach(style => {
+                    results.innerHTML += '<p>- ' + style.name + ' (类型: ' + style.type + ')</p>';
+                });
+                
+                // 4. 测试更新气泡样式
+                console.log('测试4: 更新气泡样式');
+                const updatedStyle = {
+                    ...testStyle,
+                    description: '更新后的测试样式',
+                    updatedAt: Date.now()
+                };
+                await db.bubbleStyles.put(updatedStyle);
+                
+                const updatedResult = await db.bubbleStyles.get('测试样式1');
+                if (updatedResult && updatedResult.description === '更新后的测试样式') {
+                    results.innerHTML += '<p>✅ 更新气泡样式成功</p>';
+                } else {
+                    results.innerHTML += '<p>❌ 更新气泡样式失败</p>';
+                }
+                
+                // 5. 测试删除气泡样式
+                console.log('测试5: 删除气泡样式');
+                await db.bubbleStyles.delete('测试样式1');
+                
+                const deletedStyle = await db.bubbleStyles.get('测试样式1');
+                if (!deletedStyle) {
+                    results.innerHTML += '<p>✅ 删除气泡样式成功</p>';
+                } else {
+                    results.innerHTML += '<p>❌ 删除气泡样式失败</p>';
+                }
+                
+                results.innerHTML += '<p><strong>所有测试完成！</strong></p>';
+                
+            } catch (error) {
+                console.error('测试失败:', error);
+                results.innerHTML += '<p>❌ 测试失败: ' + error.message + '</p>';
+            }
+        }
+        
+        // 页面加载时运行测试
+        window.addEventListener('load', testBubbleStyles);
+    </script>
+</body>
+</html>

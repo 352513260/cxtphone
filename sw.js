@@ -1,9 +1,7 @@
 // Service Worker for EPhone PWA
-// Version: 1.3.0
-
-const CACHE_NAME = 'ephone-v1.3.0';
-const STATIC_CACHE_NAME = 'ephone-static-v1.3.0';
-const DYNAMIC_CACHE_NAME = 'ephone-dynamic-v1.3.0';
+const CACHE_NAME = 'ephone-v1.0.0';
+const STATIC_CACHE_NAME = 'ephone-static-v1.0.0';
+const DYNAMIC_CACHE_NAME = 'ephone-dynamic-v1.0.0';
 
 // 需要缓存的静态资源
 const STATIC_ASSETS = [
@@ -13,37 +11,37 @@ const STATIC_ASSETS = [
   'https://i.postimg.cc/28p9L8FY/sogou20250606-073214826037-png.png'
 ];
 
-// 需要缓存的动态资源（API等）
+// 需要缓存的动态资源模式
 const DYNAMIC_PATTERNS = [
-  /^https:\/\/unpkg\.com\//,
-  /^https:\/\/cdnjs\.cloudflare\.com\//,
+  /^https:\/\/i\.postimg\.cc\//,
+  /^https:\/\/files\.catbox\.moe\//,
   /^https:\/\/fonts\.googleapis\.com\//,
   /^https:\/\/fonts\.gstatic\.com\//
 ];
 
 // 安装事件
 self.addEventListener('install', event => {
-  console.log('Service Worker: Installing...');
+  console.log('Service Worker: 安装中...');
   
   event.waitUntil(
     caches.open(STATIC_CACHE_NAME)
       .then(cache => {
-        console.log('Service Worker: Caching static assets');
+        console.log('Service Worker: 缓存静态资源');
         return cache.addAll(STATIC_ASSETS);
       })
       .then(() => {
-        console.log('Service Worker: Static assets cached successfully');
+        console.log('Service Worker: 安装完成');
         return self.skipWaiting();
       })
       .catch(error => {
-        console.error('Service Worker: Failed to cache static assets', error);
+        console.error('Service Worker: 安装失败', error);
       })
   );
 });
 
 // 激活事件
 self.addEventListener('activate', event => {
-  console.log('Service Worker: Activating...');
+  console.log('Service Worker: 激活中...');
   
   event.waitUntil(
     caches.keys()
@@ -52,14 +50,14 @@ self.addEventListener('activate', event => {
           cacheNames.map(cacheName => {
             // 删除旧版本的缓存
             if (cacheName !== STATIC_CACHE_NAME && cacheName !== DYNAMIC_CACHE_NAME) {
-              console.log('Service Worker: Deleting old cache:', cacheName);
+              console.log('Service Worker: 删除旧缓存', cacheName);
               return caches.delete(cacheName);
             }
           })
         );
       })
       .then(() => {
-        console.log('Service Worker: Activated successfully');
+        console.log('Service Worker: 激活完成');
         return self.clients.claim();
       })
   );
@@ -70,7 +68,7 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
   
-  // 只处理 GET 请求
+  // 只处理GET请求
   if (request.method !== 'GET') {
     return;
   }
@@ -81,90 +79,94 @@ self.addEventListener('fetch', event => {
       caches.match(request)
         .then(response => {
           if (response) {
-            console.log('Service Worker: Serving from cache:', request.url);
+            console.log('Service Worker: 从缓存返回', request.url);
             return response;
           }
           
-          // 如果缓存中没有，从网络获取
           return fetch(request)
             .then(response => {
-              // 检查响应是否有效
-              if (!response || response.status !== 200 || response.type !== 'basic') {
-                return response;
+              // 缓存成功的响应
+              if (response.status === 200) {
+                const responseClone = response.clone();
+                caches.open(STATIC_CACHE_NAME)
+                  .then(cache => {
+                    cache.put(request, responseClone);
+                  });
               }
-              
-              // 克隆响应（因为响应只能使用一次）
-              const responseToCache = response.clone();
-              
-              // 将响应添加到缓存
-              caches.open(STATIC_CACHE_NAME)
-                .then(cache => {
-                  cache.put(request, responseToCache);
-                });
-              
               return response;
             })
             .catch(error => {
-              console.error('Service Worker: Fetch failed:', error);
-              // 如果是页面请求且失败，返回离线页面
+              console.error('Service Worker: 网络请求失败', error);
+              // 返回离线页面或默认响应
               if (request.destination === 'document') {
                 return caches.match('./index.html');
               }
-              throw error;
             });
         })
     );
   }
   
-  // 处理外部资源请求
-  else if (DYNAMIC_PATTERNS.some(pattern => pattern.test(request.url))) {
+  // 处理外部资源请求（图片、字体等）
+  else if (isDynamicResource(url.href)) {
     event.respondWith(
-      caches.open(DYNAMIC_CACHE_NAME)
-        .then(cache => {
-          return cache.match(request)
+      caches.match(request)
+        .then(response => {
+          if (response) {
+            console.log('Service Worker: 从缓存返回外部资源', request.url);
+            return response;
+          }
+          
+          return fetch(request)
             .then(response => {
-              if (response) {
-                console.log('Service Worker: Serving external resource from cache:', request.url);
-                return response;
+              if (response.status === 200) {
+                const responseClone = response.clone();
+                caches.open(DYNAMIC_CACHE_NAME)
+                  .then(cache => {
+                    cache.put(request, responseClone);
+                  });
               }
-              
-              return fetch(request)
-                .then(response => {
-                  if (response && response.status === 200) {
-                    cache.put(request, response.clone());
-                  }
-                  return response;
-                })
-                .catch(error => {
-                  console.error('Service Worker: External resource fetch failed:', error);
-                  throw error;
+              return response;
+            })
+            .catch(error => {
+              console.error('Service Worker: 外部资源请求失败', error);
+              // 返回默认图片或空响应
+              if (request.destination === 'image') {
+                return new Response('', {
+                  status: 404,
+                  statusText: 'Not Found'
                 });
+              }
             });
         })
     );
   }
 });
 
+// 检查是否为动态资源
+function isDynamicResource(url) {
+  return DYNAMIC_PATTERNS.some(pattern => pattern.test(url));
+}
+
 // 处理后台同步
 self.addEventListener('sync', event => {
-  console.log('Service Worker: Background sync triggered:', event.tag);
+  console.log('Service Worker: 后台同步', event.tag);
   
   if (event.tag === 'background-sync') {
     event.waitUntil(
-      // 在这里处理后台同步逻辑
-      console.log('Service Worker: Processing background sync')
+      // 这里可以添加后台同步逻辑
+      console.log('执行后台同步任务')
     );
   }
 });
 
 // 处理推送通知
 self.addEventListener('push', event => {
-  console.log('Service Worker: Push notification received');
+  console.log('Service Worker: 收到推送通知');
   
   const options = {
     body: event.data ? event.data.text() : '您有新的消息',
-    icon: './icon-192x192.png',
-    badge: './icon-72x72.png',
+    icon: 'https://i.postimg.cc/28p9L8FY/sogou20250606-073214826037-png.png',
+    badge: 'https://i.postimg.cc/28p9L8FY/sogou20250606-073214826037-png.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
@@ -173,13 +175,13 @@ self.addEventListener('push', event => {
     actions: [
       {
         action: 'explore',
-        title: '查看消息',
-        icon: './icon-192x192.png'
+        title: '查看',
+        icon: 'https://i.postimg.cc/28p9L8FY/sogou20250606-073214826037-png.png'
       },
       {
         action: 'close',
         title: '关闭',
-        icon: './icon-192x192.png'
+        icon: 'https://i.postimg.cc/28p9L8FY/sogou20250606-073214826037-png.png'
       }
     ]
   };
@@ -191,7 +193,7 @@ self.addEventListener('push', event => {
 
 // 处理通知点击
 self.addEventListener('notificationclick', event => {
-  console.log('Service Worker: Notification clicked');
+  console.log('Service Worker: 通知被点击', event.action);
   
   event.notification.close();
   
@@ -204,7 +206,7 @@ self.addEventListener('notificationclick', event => {
 
 // 处理消息
 self.addEventListener('message', event => {
-  console.log('Service Worker: Message received:', event.data);
+  console.log('Service Worker: 收到消息', event.data);
   
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
@@ -213,11 +215,9 @@ self.addEventListener('message', event => {
 
 // 错误处理
 self.addEventListener('error', event => {
-  console.error('Service Worker: Error occurred:', event.error);
+  console.error('Service Worker: 发生错误', event.error);
 });
 
 self.addEventListener('unhandledrejection', event => {
-  console.error('Service Worker: Unhandled promise rejection:', event.reason);
+  console.error('Service Worker: 未处理的Promise拒绝', event.reason);
 });
-
-console.log('Service Worker: Script loaded successfully');
