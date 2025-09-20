@@ -17,15 +17,23 @@
     <title>EPhone - 智能聊天应用</title>
     
     <!-- 版本控制：每次更新时修改此版本号 -->
-    <meta name="app-version" content="v1.6.0">
+    <meta name="app-version" content="v1.6.3">
     
     <!-- ▼▼▼ PWA全屏配置 ▼▼▼ -->
     <!-- 1. PWA Manifest文件 -->
-    <link rel="manifest" href="manifest.json?v=1.6.0">
+    <link rel="manifest" href="manifest.json?v=1.6.3">
     
     <!-- 2. 苹果设备全屏支持 -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href="manifest.json?v=1.6.3">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"> 
+    <meta name="apple-mobile-web-app-title" content="EPhone">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#ffffff">
+
     <meta name="apple-mobile-web-app-title" content="EPhone">
     
     <!-- 3. 安卓设备全屏支持 -->
@@ -42,15 +50,15 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="msapplication-tap-highlight" content="no">
     <!-- ▲▲▲ PWA配置结束 ▲▲▲ -->
-    <!-- 版本号：v1.6.0 - 每次更新时请修改此版本号 -->
-    <script src="https://unpkg.com/dexie/dist/dexie.js?v=1.6.0"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js?v=1.6.0"></script>
+    <!-- 版本号：v1.6.3 - 每次更新时请修改此版本号 -->
+    <script src="https://unpkg.com/dexie/dist/dexie.js?v=1.6.3"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js?v=1.6.3"></script>
     
     <!-- PWA Service Worker 注册 -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js?v=1.6.0')
+                navigator.serviceWorker.register('./sw.js?v=1.6.3')
                     .then((registration) => {
                         console.log('SW registered: ', registration);
                     })
@@ -869,6 +877,22 @@
         }
         
         .checkboxes-container input { margin-right: 10px; vertical-align: middle; }
+        
+        /* 气泡样式下拉选择框的悬停效果 */
+        .dropdown-header:hover {
+            border-color: #ff69b4 !important;
+            box-shadow: 0 4px 12px rgba(255, 105, 180, 0.3) !important;
+        }
+        
+        .dropdown-option:hover {
+            background-color: rgba(255, 192, 203, 0.2) !important;
+            transform: translateX(2px);
+        }
+        
+        .dropdown-options.visible {
+            display: block !important;
+            animation: slideDown 0.3s ease;
+        }
         .bg-upload-container { display: flex; align-items: center; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
         .bg-preview-img { max-width: 120px; max-height: 80px; border-radius: 8px; border: 1px solid var(--border-color); object-fit: cover; display: none; }
         #remove-bg-btn { padding: 8px 12px; border: 1px solid #ff3b30; color: #ff3b30; background-color: #fff; border-radius: 5px; cursor: pointer; font-size: 14px; display: none; }
@@ -5708,50 +5732,276 @@
         #profile-name { font-size: 20px; font-weight: 600; color: #1f1f1f; }
         #profile-id { font-size: 14px; color: #8a8a8a; }
         
-/* ▼▼▼ 【全新V2版】心声与散记卡片样式 ▼▼▼ */
+/* ▼▼▼ 【黑白极简风格】心声与散记卡片样式 ▼▼▼ */
 
-/* 1. 卡片通用容器样式 */
+/* 1. 卡片通用容器样式 - 黑白极简风格 */
 .profile-section {
-    background-color: #ffffff; /* 干净的白色背景 */
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06); /* 柔和的卡片阴影 */
+    background-color: #ffffff; /* 纯白背景 */
+    border: 1px solid #e5e5e5; /* 精致的浅灰边框 */
+    border-radius: 12px; /* 稍微减小圆角，更现代 */
+    padding: 24px; /* 增加内边距，更透气 */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.08); /* 双层阴影，更有层次 */
     display: flex;
     flex-direction: column;
-    gap: 12px; /* 头部和内容区的间距 */
+    gap: 16px; /* 增加间距 */
     flex-shrink: 0;
+    transition: all 0.2s ease; /* 添加过渡效果 */
+}
+
+/* 悬停效果 */
+.profile-section:hover {
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.12);
+    transform: translateY(-1px); /* 轻微上浮效果 */
 }
 
 /* 2. 卡片头部容器 */
 .profile-section-header {
     display: flex;
     align-items: center;
-    gap: 10px; /* 图标和文字的间距 */
-    padding-bottom: 12px;
-    border-bottom: 1px solid #f0f0f0; /* 一条精致的分割线 */
+    gap: 12px; /* 增加图标和文字的间距 */
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f5f5f5; /* 更淡的分割线 */
 }
 
 /* 3. 卡片头部图标样式 */
 .profile-section-icon {
-    font-size: 20px;
-    opacity: 0.5;
+    font-size: 18px;
+    color: #666; /* 使用灰色，更优雅 */
+    opacity: 0.8;
 }
 
 /* 4. 卡片头部标题文字 ("心声", "散记") */
 .profile-section label {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 600;
-    color: #555; /* 比之前更深的颜色，更有质感 */
-    margin: 0; /* 移除旧的边距 */
+    color: #1a1a1a; /* 深黑色，更有质感 */
+    margin: 0;
+    letter-spacing: 0.5px; /* 增加字间距 */
 }
 
-/* 5. 卡片内容区文字 (保持不变) */
+/* 5. 卡片内容区文字 */
 .profile-section p {
     font-size: 15px;
-    color: #333;
-    line-height: 1.7;
+    color: #2a2a2a; /* 深灰色，保持可读性 */
+    line-height: 1.8; /* 增加行高，更易读 */
     margin: 0;
     white-space: pre-wrap;
+    font-weight: 400;
+}
+
+/* 6. 心声和散记的极简样式 - 统一黑白风格 */
+.profile-section.heart-voice {
+    background-color: #ffffff;
+    border-color: #e5e5e5;
+    color: #1a1a1a;
+}
+
+.profile-section.heart-voice .profile-section-header {
+    border-bottom-color: #f5f5f5;
+}
+
+.profile-section.heart-voice label {
+    color: #1a1a1a;
+}
+
+.profile-section.heart-voice p {
+    color: #2a2a2a;
+}
+
+.profile-section.random-jottings {
+    background-color: #ffffff;
+    border-color: #e5e5e5;
+    color: #1a1a1a;
+}
+
+.profile-section.random-jottings .profile-section-header {
+    border-bottom-color: #f5f5f5;
+}
+
+.profile-section.random-jottings label {
+    color: #1a1a1a;
+}
+
+.profile-section.random-jottings p {
+    color: #2a2a2a;
+}
+
+/* 7. 所有模块统一黑白极简风格 */
+.profile-section.desires,
+.profile-section.clothing,
+.profile-section.posture,
+.profile-section.specific-actions,
+.profile-section.phone-activity {
+    background-color: #ffffff;
+    border-color: #e5e5e5;
+    color: #1a1a1a;
+}
+
+.profile-section.desires .profile-section-header,
+.profile-section.clothing .profile-section-header,
+.profile-section.posture .profile-section-header,
+.profile-section.specific-actions .profile-section-header,
+.profile-section.phone-activity .profile-section-header {
+    border-bottom-color: #f5f5f5;
+}
+
+.profile-section.desires label,
+.profile-section.clothing label,
+.profile-section.posture label,
+.profile-section.specific-actions label,
+.profile-section.phone-activity label {
+    color: #1a1a1a;
+}
+
+.profile-section.desires p,
+.profile-section.clothing p,
+.profile-section.posture p,
+.profile-section.specific-actions p,
+.profile-section.phone-activity p {
+    color: #2a2a2a;
+}
+
+/* 8. 纯黑白灰配色 + 交互增强 */
+.profile-section {
+    cursor: pointer; /* 添加点击手势 */
+    position: relative;
+    overflow: hidden; /* 为动画效果做准备 */
+}
+
+/* 所有模块统一黑白灰风格，无彩色边框 */
+.profile-section.desires,
+.profile-section.clothing,
+.profile-section.posture,
+.profile-section.specific-actions,
+.profile-section.phone-activity,
+.profile-section.viewing-content,
+.profile-section.activity-status,
+.profile-section.genital-status {
+    background-color: #ffffff;
+    border-color: #e5e5e5;
+    color: #1a1a1a;
+    /* 移除所有彩色左边框，保持统一的浅灰边框 */
+}
+
+.profile-section.desires .profile-section-header,
+.profile-section.clothing .profile-section-header,
+.profile-section.posture .profile-section-header,
+.profile-section.specific-actions .profile-section-header,
+.profile-section.phone-activity .profile-section-header,
+.profile-section.viewing-content .profile-section-header,
+.profile-section.activity-status .profile-section-header,
+.profile-section.genital-status .profile-section-header {
+    border-bottom-color: #f5f5f5;
+}
+
+.profile-section.desires label,
+.profile-section.clothing label,
+.profile-section.posture label,
+.profile-section.specific-actions label,
+.profile-section.phone-activity label,
+.profile-section.viewing-content label,
+.profile-section.activity-status label,
+.profile-section.genital-status label {
+    color: #1a1a1a;
+}
+
+.profile-section.desires p,
+.profile-section.clothing p,
+.profile-section.posture p,
+.profile-section.specific-actions p,
+.profile-section.phone-activity p,
+.profile-section.viewing-content p,
+.profile-section.activity-status p,
+.profile-section.genital-status p {
+    color: #2a2a2a;
+}
+
+/* 9. 交互增强效果 */
+.profile-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(0,0,0,0.02), rgba(0,0,0,0.05));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.profile-section:hover::before {
+    opacity: 1;
+}
+
+/* 点击时的反馈效果 */
+.profile-section:active {
+    transform: translateY(1px);
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+/* 10. 展开/收起功能样式 */
+.profile-section.expanded {
+    max-height: none;
+}
+
+.profile-section.collapsed {
+    max-height: 120px; /* 限制高度，只显示标题和部分内容 */
+}
+
+.profile-section.collapsed .profile-section-content {
+    overflow: hidden;
+    position: relative;
+}
+
+.profile-section.collapsed .profile-section-content::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: linear-gradient(transparent, #ffffff);
+    pointer-events: none;
+}
+
+/* 展开/收起按钮 */
+.profile-section-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s ease;
+    color: #666;
+}
+
+.profile-section-toggle:hover {
+    background-color: rgba(0,0,0,0.05);
+    color: #333;
+}
+
+.profile-section-toggle svg {
+    width: 16px;
+    height: 16px;
+    transition: transform 0.2s ease;
+}
+
+.profile-section.expanded .profile-section-toggle svg {
+    transform: rotate(180deg);
+}
+
+/* 11. 内容区域样式 */
+.profile-section-content {
+    transition: all 0.3s ease;
+    position: relative;
 }
 
 /* ▲▲▲ 新样式粘贴结束 ▲▲▲ */
@@ -5780,6 +6030,46 @@
         .thought-content .label svg { width: 16px; height: 16px; }
         .thought-content .text { font-size: 14px; color: #555; line-height: 1.7; white-space: pre-wrap; padding-left: 22px; }
         .thought-content .jottings { margin-top: 15px; }
+        
+        /* 心声和散记的彩色样式 */
+        .thought-content .voice .label { color: #ff9a9e; }
+        .thought-content .voice .text { color: #8b1538; }
+        
+        .thought-content .jottings .label { color: #a8e6cf; }
+        .thought-content .jottings .text { color: #2d5a3d; }
+        
+        /* 新增心声字段的样式 */
+        .thought-content .desires { margin-top: 15px; }
+        .thought-content .desires .label { color: #ff6b6b; }
+        .thought-content .desires .text { color: #d63031; }
+        
+        .thought-content .clothing { margin-top: 15px; }
+        .thought-content .clothing .label { color: #4ecdc4; }
+        .thought-content .clothing .text { color: #00b894; }
+        
+        .thought-content .posture { margin-top: 15px; }
+        .thought-content .posture .label { color: #a8e6cf; }
+        .thought-content .posture .text { color: #2d5a3d; }
+        
+        .thought-content .specific-actions { margin-top: 15px; }
+        .thought-content .specific-actions .label { color: #ffd93d; }
+        .thought-content .specific-actions .text { color: #8b6914; }
+        
+        .thought-content .phone-activity { margin-top: 15px; }
+        .thought-content .phone-activity .label { color: #667eea; }
+        .thought-content .phone-activity .text { color: #5a67d8; }
+        
+        .thought-content .viewing-content { margin-top: 15px; }
+        .thought-content .viewing-content .label { color: #f093fb; }
+        .thought-content .viewing-content .text { color: #e53e3e; }
+        
+        .thought-content .activity-status { margin-top: 15px; }
+        .thought-content .activity-status .label { color: #4facfe; }
+        .thought-content .activity-status .text { color: #3182ce; }
+        
+        .thought-content .genital-status { margin-top: 15px; }
+        .thought-content .genital-status .label { color: #ff9a9e; }
+        .thought-content .genital-status .text { color: #8b1538; }
         
         /* 12. 隐藏滚动条 (保持不变) */
         #profile-main-content::-webkit-scrollbar,
@@ -7178,12 +7468,12 @@
                 <img id="profile-avatar-img" src="https://i.postimg.cc/y8xWzCqj/anime-boy.jpg" class="editable-image">
             </div>
             <div class="profile-info">
-                <p id="profile-username" class="editable-text">@ insonneve 🪦</p>
-                <p id="profile-sub-username" class="editable-text">@ insonneve</p>
-                <p id="profile-bio" class="editable-text">你好像过得很好 迫不及待的抹去我存在的痕迹</p>
+                <p id="profile-username" class="editable-text">@ 脑袋常漏风</p>
+                <p id="profile-sub-username" class="editable-text">@ C-au啦得光之国</p>
+                <p id="profile-bio" class="editable-text">ในจักรวาลของคุณ จงเป็นดวงจันทร์ของตัวเอง</p>
                 <p id="profile-location" class="editable-text">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"></path></svg>
-                    <span>北海道</span>
+                    <span>霍格沃茨有求必应屋</span>
                 </p>
             </div>
         </div>
@@ -7193,14 +7483,14 @@
             <!-- 左侧小组件列 -->
             <div id="desktop-widget-column">
                 <div class="desktop-widget text-only">
-                    <p id="widget-text-1" class="editable-text">Be fearless in pursuit of happiness</p>
+                    <p id="widget-text-1" class="editable-text">เธอดีพอแล้ว</p>
                 </div>
                 <div class="desktop-widget icon-left">
                     <img id="widget-avatar-1" src="https://i.imgur.com/1n3a43H.jpeg" class="editable-image">
-                    <span id="widget-text-2" class="editable-text">Dare to be different</span>
+                    <span id="widget-text-2" class="editable-text">จงเปล่งประกาย</span>
                 </div>
                 <div class="desktop-widget icon-right">
-                    <span id="widget-text-3" class="editable-text">* Keep your spirit free</span>
+                    <span id="widget-text-3" class="editable-text">สู้ๆนะ</span>
                     <img id="widget-avatar-2" src="https://i.imgur.com/5A0tE9a.jpeg" class="editable-image">
                 </div>
                 
@@ -7220,7 +7510,7 @@
                     <span class="label">外观设置</span>
                 </div>
                 <div class="desktop-app-icon" onclick="openRenderingRulesScreen()">
-                    <div class="icon-bg-desktop"><img id="icon-img-renderer" src="https://s3plus.meituan.net/opapisdk/op_ticket_885190757_1756312261242_qdqqd_g0eriz.jpeg" alt="渲染器"></div>
+                    <div class="icon-bg-desktop"><img id="icon-img-renderer" src="https://i.postimg.cc/28p9L8FY/sogou20250606-073214826037-png.png" alt="渲染器"></div>
                     <span class="label">渲染器</span>
                 </div>
             </div>
@@ -7323,8 +7613,26 @@
                 <p style="font-size: 14px; color: #666; background-color: #f0f0f0; padding: 10px; border-radius: 8px;"> 提示: 若要使用“发送图片”功能, 请务必选择支持Vision(视觉)的模型, 如<code style="background-color: #e0e0e0; padding: 2px 4px; border-radius: 4px;">gpt-4o</code>或<code
                         style="background-color: #e0e0e0; padding: 2px 4px; border-radius: 4px;">gpt-4-vision-preview</code>。 </p>
                 <div class="form-group">
+                    <label for="api-mode-select">API模式</label>
+                    <select id="api-mode-select" style="margin-bottom: 15px;">
+                        <option value="proxy">反代模式 (推荐)</option>
+                        <option value="direct">API接口模式</option>
+                    </select>
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                        反代模式：使用反代服务，自动拉取模型列表<br>
+                        API接口模式：直接使用API代理服务，需要手动输入完整地址
+                    </p>
+                </div>
+                <div class="form-group" id="proxy-mode-group">
                     <label for="proxy-url">反代地址 (不需要添加/v1噢~)</label>
                     <input type="text" id="proxy-url" placeholder="例如: https://api.openai.com">
+                </div>
+                <div class="form-group" id="direct-mode-group" style="display: none;">
+                    <label for="direct-api-url">API接口地址 (完整地址，包含/v1)</label>
+                    <input type="text" id="direct-api-url" placeholder="例如: http://1.1.1.1:3000/v1">
+                    <p style="font-size: 12px; color: #666; margin-top: 5px;">
+                        适用于其他API代理服务，需要包含完整的API路径
+                    </p>
                 </div>
                 <div class="form-group">
                     <label for="api-key">密钥 (API Key)</label>
@@ -8388,6 +8696,18 @@
             <label for="max-memory">短期记忆（上下文）条数</label>
             <input type="number" id="max-memory" value="10">
         </div>
+        <!-- 【新增】聊天记录导入导出功能 -->
+        <div class="form-group">
+            <hr style="opacity: 0.3; margin: 20px 0;">
+            <label>聊天记录管理</label>
+            <p style="font-size: 12px; font-weight: normal; color: #999; margin-top: 5px;">
+                导出或导入单独聊天的聊天记录和设置。
+            </p>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="export-single-chat-btn" class="form-button form-button-secondary" style="flex: 1;">导出聊天记录</button>
+                <button id="import-single-chat-btn" class="form-button form-button-secondary" style="flex: 1;">导入聊天记录</button>
+            </div>
+        </div>
         <div class="form-group">
             <label for="linked-memory-count">挂载记忆条数</label>
             <input type="number" id="linked-memory-count" value="10">
@@ -8445,11 +8765,57 @@
             <div style="margin-top: 8px;">
                 <!-- 已保存样式选择 -->
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                    <select id="saved-bubble-styles-select" style="flex-grow: 1; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 14px;">
-                        <option value="">-- 选择保存的气泡样式 --</option>
-                    </select>
+                    <div class="custom-dropdown" style="flex-grow: 1; position: relative;">
+                        <div class="dropdown-header" id="saved-bubble-styles-dropdown" style="
+                            padding: 12px 15px; 
+                            border: 2px solid #ffc0cb; 
+                            border-radius: 12px; 
+                            background: linear-gradient(135deg, #fff0f5, #ffeef8); 
+                            cursor: pointer; 
+                            display: flex; 
+                            justify-content: space-between; 
+                            align-items: center;
+                            transition: all 0.3s ease;
+                            box-shadow: 0 2px 8px rgba(255, 192, 203, 0.2);
+                        ">
+                            <span id="selected-style-text" style="color: #d63384; font-weight: 500;">-- 选择保存的气泡样式 --</span>
+                            <span id="dropdown-arrow" style="color: #d63384; font-weight: bold; transition: transform 0.3s ease;">▼</span>
+                        </div>
+                        <div class="dropdown-options" id="bubble-styles-options" style="
+                            display: none;
+                            position: absolute;
+                            top: 100%;
+                            left: 0;
+                            right: 0;
+                            margin-top: 8px;
+                            max-height: 200px;
+                            overflow-y: auto;
+                            background: linear-gradient(135deg, #fff0f5, #ffeef8);
+                            border: 2px solid #ffc0cb;
+                            border-radius: 12px;
+                            z-index: 1000;
+                            box-shadow: 0 8px 25px rgba(255, 192, 203, 0.3);
+                        ">
+                            <div class="dropdown-option" data-value="" style="
+                                padding: 12px 15px; 
+                                cursor: pointer; 
+                                color: #d63384; 
+                                font-weight: 500;
+                                transition: all 0.2s ease;
+                                border-radius: 8px;
+                                margin: 4px 8px;
+                            ">-- 选择保存的气泡样式 --</div>
+                            <!-- 其他选项将由JavaScript动态添加 -->
+                        </div>
+                    </div>
                     <button id="load-bubble-style-btn" class="form-button-secondary" style="padding: 8px 12px; font-size: 12px;">加载</button>
                     <button id="delete-bubble-style-btn" class="form-button-secondary" style="padding: 8px 12px; font-size: 12px; background-color: #dc3545; color: white;">删除</button>
+                </div>
+                
+                <!-- 导出导入按钮 -->
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <button id="export-css-bubble-btn" class="form-button-secondary" style="flex: 1; padding: 8px 12px; font-size: 12px; background-color: #28a745; color: white;">导出CSS气泡</button>
+                    <button id="import-css-bubble-btn" class="form-button-secondary" style="flex: 1; padding: 8px 12px; font-size: 12px; background-color: #17a2b8; color: white;">导入CSS气泡</button>
                 </div>
                 
                 <!-- 样式名称输入和保存 -->
@@ -11950,7 +12316,7 @@ async function loadAllDataFromDB() {
         await db.memories.bulkPut(memoriesToUpdate);
     }
 
-    state.apiConfig = apiConfig || { id: 'main', proxyUrl: '', apiKey: '', model: '', secondaryProxyUrl: '', secondaryApiKey: '', secondaryModel: '' };
+    state.apiConfig = apiConfig || { id: 'main', proxyUrl: '', apiKey: '', model: '', secondaryProxyUrl: '', secondaryApiKey: '', secondaryModel: '', apiMode: 'proxy', directApiUrl: '' };
 // ▼▼▼ 【请用这个 V2 版本】替换旧的 state.globalSettings 初始化代码 ▼▼▼
 state.globalSettings = globalSettings || { 
     id: 'main', 
@@ -12371,15 +12737,23 @@ if (!state.globalSettings.widgetData) {
         // ▼▼▼ 【请用这个新版本】替换旧的 renderApiSettings 函数 ▼▼▼
         function renderApiSettings() { 
             // 1. 渲染当前配置到输入框
+            document.getElementById('api-mode-select').value = state.apiConfig.apiMode || 'proxy';
             document.getElementById('proxy-url').value = state.apiConfig.proxyUrl || ''; 
+            document.getElementById('direct-api-url').value = state.apiConfig.directApiUrl || '';
             document.getElementById('api-key').value = state.apiConfig.apiKey || ''; 
             document.getElementById('secondary-proxy-url').value = state.apiConfig.secondaryProxyUrl || '';
             document.getElementById('secondary-api-key').value = state.apiConfig.secondaryApiKey || '';
             document.getElementById('background-activity-switch').checked = state.globalSettings.enableBackgroundActivity || false;
             document.getElementById('background-interval-input').value = state.globalSettings.backgroundActivityInterval || 60;
             document.getElementById('block-cooldown-input').value = state.globalSettings.blockCooldownHours || 1;
+            
+            // 2. 更新API模式显示
+            updateApiModeDisplay();
+            
+            // 3. 初始化API模式事件监听器
+            initApiModeListeners();
         
-            // 2. 【核心新增】加载并渲染预设下拉菜单
+            // 4. 【核心新增】加载并渲染预设下拉菜单
             loadApiPresetsDropdown();
             
             // 3. 【修复】渲染后台活动角色选择列表
@@ -12393,6 +12767,103 @@ if (!state.globalSettings.widgetData) {
                 startHeartbeatCountdown();
             }
         }
+        
+        // ▼▼▼ 【新增】API模式显示控制函数 ▼▼▼
+        function updateApiModeDisplay() {
+            const mode = document.getElementById('api-mode-select').value;
+            const proxyGroup = document.getElementById('proxy-mode-group');
+            const directGroup = document.getElementById('direct-mode-group');
+            
+            if (mode === 'proxy') {
+                proxyGroup.style.display = 'block';
+                directGroup.style.display = 'none';
+            } else {
+                proxyGroup.style.display = 'none';
+                directGroup.style.display = 'block';
+            }
+        }
+
+        // ▼▼▼ 【新增】统一API地址获取函数 ▼▼▼
+        /**
+         * 根据API模式获取正确的API地址
+         * @returns {string} 返回完整的API地址
+         */
+        function getApiUrl() {
+            const apiMode = state.apiConfig.apiMode || 'proxy';
+            
+            if (apiMode === 'direct') {
+                // API接口模式：直接使用用户输入的完整地址
+                return state.apiConfig.directApiUrl || '';
+            } else {
+                // 反代模式：使用proxyUrl
+                return state.apiConfig.proxyUrl || '';
+            }
+        }
+        
+        // ▼▼▼ 【新增】CORS代理函数 ▼▼▼
+        /**
+         * 使用CORS代理来绕过跨域限制
+         * @param {string} url - 目标API地址
+         * @param {object} options - fetch选项
+         * @returns {Promise<Response>} 返回响应
+         */
+        async function fetchWithCorsProxy(url, options = {}) {
+            // 尝试使用公共CORS代理
+            const corsProxies = [
+                'https://api.allorigins.win/raw?url=',
+                'https://corsproxy.io/?',
+                'https://thingproxy.freeboard.io/fetch/'
+            ];
+            
+            for (const proxy of corsProxies) {
+                try {
+                    const proxyUrl = proxy + encodeURIComponent(url);
+                    // 移除Authorization头，因为代理可能不支持
+                    const proxyOptions = { ...options };
+                    delete proxyOptions.headers?.['Authorization'];
+                    
+                    const response = await fetch(proxyUrl, {
+                        ...proxyOptions,
+                        mode: 'cors'
+                    });
+                    
+                    if (response.ok) {
+                        return response;
+                    }
+                } catch (error) {
+                    console.warn(`CORS代理 ${proxy} 失败:`, error.message);
+                    continue;
+                }
+            }
+            
+            // 如果所有代理都失败，抛出错误
+            throw new Error('所有CORS代理都不可用，请使用本地HTTP服务器运行应用');
+        }
+        
+        // ▼▼▼ 【新增】API模式切换事件监听器 ▼▼▼
+        function initApiModeListeners() {
+            const modeSelect = document.getElementById('api-mode-select');
+            if (modeSelect) {
+                modeSelect.addEventListener('change', function() {
+                    updateApiModeDisplay();
+                    // 保存模式选择
+                    state.apiConfig.apiMode = this.value;
+                    db.apiConfig.put(state.apiConfig);
+                });
+            }
+            
+            // 为直接API地址输入框添加保存事件
+            const directApiUrlInput = document.getElementById('direct-api-url');
+            if (directApiUrlInput) {
+                directApiUrlInput.addEventListener('blur', function() {
+                    state.apiConfig.directApiUrl = this.value;
+                    db.apiConfig.put(state.apiConfig);
+                });
+            }
+        }
+        // ▲▲▲ 新增结束 ▲▲▲
+        
+        
         // ▲▲▲ 替换结束 ▲▲▲
                 window.renderApiSettingsProxy = renderApiSettings;
         
@@ -13796,9 +14267,10 @@ if (!state.globalSettings.widgetData) {
             }
             let needsImmediateReaction = false; 
             try {
-                const { proxyUrl, apiKey, model } = state.apiConfig;
-                if (!proxyUrl || !apiKey || !model) {
-                    alert('请先在API设置中配置反代地址、密钥并选择模型。');
+                const { apiKey, model } = state.apiConfig;
+                const apiUrl = getApiUrl();
+                if (!apiUrl || !apiKey || !model) {
+                    alert('请先在API设置中配置API地址、密钥并选择模型。');
                     if (chat.isGroup) {
                         if (typingIndicator) typingIndicator.style.display = 'none';
                     } else {
@@ -13843,9 +14315,9 @@ if (!state.globalSettings.widgetData) {
                     const messagesForCallDecision = [{role: 'user', content: callDecisionPrompt}];
                     
                     try {
-                        let isGemini = proxyUrl.includes('generativelanguage');
+                        let isGemini = apiUrl.includes('generativelanguage');
                         let geminiConfig = toGeminiRequestData(model, apiKey, callDecisionPrompt, messagesForCallDecision);
-                        const response = isGemini ? await fetch(geminiConfig.url, geminiConfig.data) : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                        const response = isGemini ? await fetch(geminiConfig.url, geminiConfig.data) : await fetch(`${apiUrl}/v1/chat/completions`, {
                             method: 'POST',
                             headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
                             body: JSON.stringify({model: model, messages: messagesForCallDecision, temperature: 0.7})
@@ -13952,12 +14424,13 @@ if (!state.globalSettings.widgetData) {
                             { role: 'user', content: "请根据以上设定，立即做出你的决定。" }
                         ];
                         
-                        let isGemini = proxyUrl.includes('generativelanguage');
+                        const apiUrl = getApiUrl();
+                        let isGemini = apiUrl.includes('generativelanguage');
                         let geminiConfig = toGeminiRequestData(model, apiKey, decisionPrompt, [{ role: 'user', content: "请根据以上设定，立即做出你的决定。" }]);
                         
                         const response = isGemini 
                             ? await fetch(geminiConfig.url, geminiConfig.data) 
-                            : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                            : await fetch(apiUrl.endsWith('/v1') ? `${apiUrl}/chat/completions` : `${apiUrl}/v1/chat/completions`, {
                                 method: 'POST',
                                 headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
                                 body: JSON.stringify({model: model, messages: messagesForDecision, temperature: 0.8})
@@ -14734,9 +15207,18 @@ messagesPayload = historySlice.map(msg => {
         5.  **【新】更新状态**: 你可以在对话中【自然地】改变你的状态。比如，聊到一半你可能会说“我先去洗个澡”，然后更新你的状态。
         6.  **【【【最终手段】】】**: 只有在对话让你的角色感到不适、被冒犯或关系破裂时，你才可以使用 \`block_user\` 指令。这是一个非常严肃的操作，会中断你们的对话。
         7. **后台行为**: 你有几率在回复聊天内容的同时，执行一些“后台”操作来表现你的独立生活（发动态、评论、点赞、转发）。
-        8.  **【【【内心独白铁律】】】**: 在你生成所有其他行动指令之后，你【必须】在JSON数组的【最后】，添加一个 "update_thoughts" 指令，用来更新你角色的“心声”和“散记”。这对于展现角色的深度至关重要。
-            - **心声 (heartfelt_voice)**: 必须是一句简短的、概括角色此刻最核心、最私密想法的话。
-            - **散记 (random_jottings)**: 这段散记是角色在当前情境下，根据人设，有感而发的一些思考或经历，可以与当前对话内容相关，也可以是独立的小故事或心情记录，禁止语言OOC。字数必须在50字以上。
+        8.  **【【【内心独白铁律】】】**: 在你生成所有其他行动指令之后，你【必须】在JSON数组的【最后】，添加一个 "update_thoughts" 指令，用来更新你角色的"心声"和"散记"。这对于展现角色的深度至关重要。
+            - **【强制要求】每次回复必须完全不同**: 你【绝对禁止】重复使用相同或相似的内容。每次的update_thoughts指令都必须包含全新的、独特的、与之前完全不同的内容。禁止任何形式的重复、相似或模板化表达。
+            - **心声 (heartfelt_voice)**: 必须是一句简短的、概括角色此刻最核心、最私密想法的话。每次都必须表达不同的情感、想法或感受。
+            - **散记 (random_jottings)**: 这段散记是角色在当前情境下，根据人设，有感而发的一些思考或经历，可以与当前对话内容相关，也可以是独立的小故事或心情记录，禁止语言OOC。字数必须在50字以上。每次都必须讲述不同的故事、经历或思考。
+            - **欲望 (desires)**: 角色当前的欲望、渴望或想要的东西，可以是物质上的、情感上的或精神上的。每次都必须表达不同的欲望或渴望。
+            - **衣着 (clothing)**: 角色当前穿着的服装描述，包括颜色、款式、材质等细节。每次都必须描述不同的服装搭配。
+            - **姿势 (posture)**: 角色当前的姿势或身体状态，如坐着、躺着、站立等。每次都必须是不同的姿势或状态。
+            - **具体动作 (specific_actions)**: 角色正在进行的具体动作或行为，如打字、喝水、看手机等。每次都必须是不同的动作。
+            - **手机操作 (phone_activity)**: 角色在手机上正在进行的操作，如浏览、聊天、看视频等。每次都必须是不同的手机活动。
+            - **观看内容 (viewing_content)**: 角色正在观看或关注的内容，如视频、文章、图片等。每次都必须是不同的观看内容。
+            - **活动状态 (activity_status)**: 角色当前的整体活动状态，如工作、休息、娱乐等。每次都必须是不同的活动状态。
+            - **阳具情况 (genital_status)**: 角色私密部位的当前状态，包括生理反应、感受等。每次都必须描述不同的状态或感受。
         
         # 你的头像库
         - 你可以根据对话内容或你的心情，从下面的头像库中选择一个新头像来更换。
@@ -14924,7 +15406,7 @@ messagesPayload = historySlice.map(msg => {
                 let response;
                 // 【核心修改1】更智能的API判断
                 // 不再严格等于，而是检查URL是否包含官方Gemini的域名
-                let isGemini = proxyUrl.includes('generativelanguage');
+                let isGemini = apiUrl.includes('generativelanguage');
         
                 try {
                     // 【核心修改2】根据API类型，构建完全不同的请求
@@ -14941,7 +15423,9 @@ messagesPayload = historySlice.map(msg => {
                             stream: false,
                             max_tokens: 4000
                         };
-                        response = await fetch(`${proxyUrl}/v1/chat/completions`, {
+                        // 确保URL格式正确，避免重复的/v1
+                        const chatUrl = apiUrl.endsWith('/v1') ? `${apiUrl}/chat/completions` : `${apiUrl}/v1/chat/completions`;
+                        response = await fetch(chatUrl, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
@@ -15092,12 +15576,45 @@ messagesPayload = historySlice.map(msg => {
                                 if (msgData.random_jottings) {
                                     chat.randomJottings = String(msgData.random_jottings);
                                 }
+                                // 新增字段处理
+                                if (msgData.desires) {
+                                    chat.desires = String(msgData.desires);
+                                }
+                                if (msgData.clothing) {
+                                    chat.clothing = String(msgData.clothing);
+                                }
+                                if (msgData.posture) {
+                                    chat.posture = String(msgData.posture);
+                                }
+                                if (msgData.specific_actions) {
+                                    chat.specificActions = String(msgData.specific_actions);
+                                }
+                                if (msgData.phone_activity) {
+                                    chat.phoneActivity = String(msgData.phone_activity);
+                                }
+                                if (msgData.viewing_content) {
+                                    chat.viewingContent = String(msgData.viewing_content);
+                                }
+                                if (msgData.activity_status) {
+                                    chat.activityStatus = String(msgData.activity_status);
+                                }
+                                if (msgData.genital_status) {
+                                    chat.genitalStatus = String(msgData.genital_status);
+                                }
                                 if (!Array.isArray(chat.thoughtsHistory)) {
                                     chat.thoughtsHistory = [];
                                 }
                                 chat.thoughtsHistory.push({
                                     heartfeltVoice: chat.heartfeltVoice,
                                     randomJottings: chat.randomJottings,
+                                    desires: chat.desires || '',
+                                    clothing: chat.clothing || '',
+                                    posture: chat.posture || '',
+                                    specificActions: chat.specificActions || '',
+                                    phoneActivity: chat.phoneActivity || '',
+                                    viewingContent: chat.viewingContent || '',
+                                    activityStatus: chat.activityStatus || '',
+                                    genitalStatus: chat.genitalStatus || '',
                                     timestamp: Date.now()
                                 });
                                 if (chat.thoughtsHistory.length > 50) {
@@ -15345,7 +15862,7 @@ case 'qzone_post':
                                 videoCallState.activeChatId = chatId; 
                                 videoCallState.isAwaitingResponse = true;
                                 videoCallState.isGroupCall = chat.isGroup;
-                                videoCallState.callRequester = msgData.name || chat.name;
+                                videoCallState.callRequester = chat.originalName || msgData.name || chat.name;
                                 showIncomingCallModal();
                             }
                             continue;
@@ -15355,7 +15872,9 @@ case 'qzone_post':
                                 videoCallState.isAwaitingResponse = true;
                                 videoCallState.isGroupCall = true;
                                 videoCallState.initiator = 'ai';
-                                videoCallState.callRequester = msgData.name;
+                                // 在群聊中使用原始名字，需要通过msgData.name查找对应的成员
+                                const member = chat.members ? chat.members.find(m => m.groupNickname === msgData.name || m.originalName === msgData.name) : null;
+                                videoCallState.callRequester = member ? member.originalName : msgData.name;
                                 showIncomingCallModal();
                             }
                             continue;
@@ -17359,8 +17878,9 @@ function fixUnplayableSongs() {
             }
             setAvatarActingState(chatId, true);
         
-            const { proxyUrl, apiKey, model } = state.apiConfig;
-            if (!proxyUrl || !apiKey || !model) return;
+            const { apiKey, model } = state.apiConfig;
+            const apiUrl = getApiUrl();
+            if (!apiUrl || !apiKey || !model) return;
         
             const userNickname = state.qzoneSettings.nickname;
             const now = new Date();
@@ -17658,11 +18178,11 @@ ${longTermMemoryContext}
         
                 console.log(`正在为后台活动发送API请求 ("${chat.name}")`);
         
-                let isGemini = proxyUrl.includes('generativelanguage');
+                let isGemini = apiUrl.includes('generativelanguage');
                 let geminiConfig = toGeminiRequestData(model,apiKey,systemPrompt, messagesPayload);
                 const response = isGemini ?
                     await fetch(geminiConfig.url, geminiConfig.data) :
-                    await fetch(`${proxyUrl}/v1/chat/completions`, {
+                    await fetch(apiUrl.endsWith('/v1') ? `${apiUrl}/chat/completions` : `${apiUrl}/v1/chat/completions`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}` },
                         body: JSON.stringify({
@@ -19796,7 +20316,8 @@ async function endVideoCall() {
             if (!videoCallState.isActive) return;
         
             const chat = state.chats[videoCallState.activeChatId];
-            const { proxyUrl, apiKey, model } = state.apiConfig;
+            const { apiKey, model } = state.apiConfig;
+            const apiUrl = getApiUrl();
             const callFeed = document.getElementById('video-call-main');
             const userNickname = chat.settings.myNickname || '我';
         
@@ -19879,9 +20400,9 @@ async function endVideoCall() {
             }
             
                 try {
-                    let  isGemini = proxyUrl === GEMINI_API_URL;
+                    let  isGemini = apiUrl.includes('generativelanguage');
                     let geminiConfig = toGeminiRequestData(model,apiKey,inCallPrompt, messagesForApi)
-                    const response = isGemini ? await fetch(geminiConfig.url, geminiConfig.data) : await fetch(`${proxyUrl}/v1/chat/completions`, {
+                    const response = isGemini ? await fetch(geminiConfig.url, geminiConfig.data) : await fetch(apiUrl.endsWith('/v1') ? `${apiUrl}/chat/completions` : `${apiUrl}/v1/chat/completions`, {
                         method: 'POST',
                         headers: {'Content-Type': 'application/json', 'Authorization': `Bearer ${apiKey}`},
                         body: JSON.stringify({
@@ -24021,6 +24542,16 @@ function updateMusicProgressBar() {
             document.getElementById('profile-heartfelt-voice').textContent = chat.heartfeltVoice || '...';
             document.getElementById('profile-random-jottings').textContent = chat.randomJottings || '...';
             
+            // 填充新增的心声字段
+            document.getElementById('profile-desires').textContent = chat.desires || '...';
+            document.getElementById('profile-clothing').textContent = chat.clothing || '...';
+            document.getElementById('profile-posture').textContent = chat.posture || '...';
+            document.getElementById('profile-specific-actions').textContent = chat.specificActions || '...';
+            document.getElementById('profile-phone-activity').textContent = chat.phoneActivity || '...';
+            document.getElementById('profile-viewing-content').textContent = chat.viewingContent || '...';
+            document.getElementById('profile-activity-status').textContent = chat.activityStatus || '...';
+            document.getElementById('profile-genital-status').textContent = chat.genitalStatus || '...';
+            
             const modal = document.getElementById('character-profile-modal');
         
             // 【核心修复】由于我们已经从HTML中移除了“进入聊天”按钮，
@@ -24145,6 +24676,54 @@ function updateMusicProgressBar() {
                         </div>
                         <p class="text">${thought.randomJottings}</p>
                     </div>
+                    ${thought.desires ? `
+                    <div class="desires">
+                        <div class="label">🔥 欲望</div>
+                        <p class="text">${thought.desires}</p>
+                    </div>
+                    ` : ''}
+                    ${thought.clothing ? `
+                    <div class="clothing">
+                        <div class="label">👗 衣着</div>
+                        <p class="text">${thought.clothing}</p>
+                    </div>
+                    ` : ''}
+                    ${thought.posture ? `
+                    <div class="posture">
+                        <div class="label">🧘 姿势</div>
+                        <p class="text">${thought.posture}</p>
+                    </div>
+                    ` : ''}
+                    ${thought.specificActions ? `
+                    <div class="specific-actions">
+                        <div class="label">🎬 具体动作</div>
+                        <p class="text">${thought.specificActions}</p>
+                    </div>
+                    ` : ''}
+                    ${thought.phoneActivity ? `
+                    <div class="phone-activity">
+                        <div class="label">📱 手机操作</div>
+                        <p class="text">${thought.phoneActivity}</p>
+                    </div>
+                    ` : ''}
+                    ${thought.viewingContent ? `
+                    <div class="viewing-content">
+                        <div class="label">👀 观看内容</div>
+                        <p class="text">${thought.viewingContent}</p>
+                    </div>
+                    ` : ''}
+                    ${thought.activityStatus ? `
+                    <div class="activity-status">
+                        <div class="label">⚡ 活动状态</div>
+                        <p class="text">${thought.activityStatus}</p>
+                    </div>
+                    ` : ''}
+                    ${thought.genitalStatus ? `
+                    <div class="genital-status">
+                        <div class="label">🔞 阳具情况</div>
+                        <p class="text">${thought.genitalStatus}</p>
+                    </div>
+                    ` : ''}
                 </div>
             `;
             return card;
@@ -26510,6 +27089,195 @@ function applyStatusBarVisibility() {
 }
 // ▲▲▲ 新增函数结束 ▲▲▲
 
+// ▼▼▼ 【全新】单独聊天记录导入导出功能 ▼▼▼
+/**
+ * 导出单独聊天记录
+ */
+async function exportSingleChat() {
+    if (!state.activeChatId) {
+        await showCustomAlert('提示', '请先选择一个聊天');
+        return;
+    }
+    
+    try {
+        const chat = state.chats[state.activeChatId];
+        if (!chat) {
+            await showCustomAlert('错误', '聊天不存在');
+            return;
+        }
+        
+        // 准备导出数据
+        const exportData = {
+            exportVersion: '1.0',
+            exportTime: new Date().toISOString(),
+            chatData: {
+                id: chat.id,
+                name: chat.name,
+                originalName: chat.originalName,
+                isGroup: chat.isGroup,
+                settings: chat.settings || {},
+                history: chat.history || [],
+                longTermMemory: chat.longTermMemory || [],
+                nameHistory: chat.nameHistory || [],
+                status: chat.status || { text: '在线', customText: '', type: 'online', isBusy: false },
+                members: chat.members || [],
+                groupId: chat.groupId || null,
+                npcs: chat.npcs || [],
+                relationship: chat.relationship || {
+                    status: 'friend',
+                    blockedTimestamp: null,
+                    unblockTimestamp: null
+                }
+            }
+        };
+        
+        // 生成文件名
+        const timestamp = new Date().toLocaleDateString('zh-CN').replace(/\//g, '-');
+        const fileName = `${chat.name}_聊天记录_${timestamp}.json`;
+        
+        // 创建下载
+        const jsonString = JSON.stringify(exportData, null, 2);
+        const blob = new Blob([jsonString], { type: 'application/json;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        
+        await showCustomAlert('成功', `聊天记录已导出为：${fileName}`);
+        
+    } catch (error) {
+        console.error('导出聊天记录失败:', error);
+        await showCustomAlert('错误', `导出失败：${error.message}`);
+    }
+}
+
+/**
+ * 导入单独聊天记录
+ */
+async function importSingleChat() {
+    try {
+        // 创建文件选择器
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = '.json';
+        fileInput.style.display = 'none';
+        
+        // 监听文件选择
+        fileInput.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            try {
+                const text = await file.text();
+                const importData = JSON.parse(text);
+                
+                // 验证数据格式
+                if (!importData.chatData || !importData.chatData.id) {
+                    throw new Error('无效的聊天记录文件格式');
+                }
+                
+                const chatData = importData.chatData;
+                
+                // 检查是否已存在相同ID的聊天
+                const existingChat = state.chats[chatData.id];
+                let shouldReplace = false;
+                
+                if (existingChat) {
+                    shouldReplace = await showCustomConfirm(
+                        '聊天记录已存在',
+                        `已存在名为"${existingChat.name}"的聊天记录，是否要替换？\n\n⚠️ 替换后原聊天记录将丢失！`,
+                        { confirmButtonClass: 'btn-danger', confirmText: '替换' }
+                    );
+                    
+                    if (!shouldReplace) return;
+                }
+                
+                // 确认导入
+                const confirmed = await showCustomConfirm(
+                    '确认导入',
+                    `即将导入聊天记录："${chatData.name}"\n\n${shouldReplace ? '这将替换现有的聊天记录。' : '这将创建新的聊天记录。'}`,
+                    { confirmText: '确认导入' }
+                );
+                
+                if (!confirmed) return;
+                
+                // 确保导入的数据包含所有必需的属性
+                const completeChatData = {
+                    ...chatData,
+                    // 确保有默认的关系状态
+                    relationship: chatData.relationship || {
+                        status: 'friend',
+                        blockedTimestamp: null,
+                        unblockTimestamp: null
+                    },
+                    // 确保有默认的状态
+                    status: chatData.status || {
+                        text: '在线',
+                        customText: '',
+                        type: 'online',
+                        isBusy: false
+                    },
+                    // 确保有默认的设置
+                    settings: {
+                        ...chatData.settings,
+                        // 确保有默认的AI头像
+                        aiAvatar: chatData.settings?.aiAvatar || defaultAvatar,
+                        // 确保有默认的用户头像
+                        myAvatar: chatData.settings?.myAvatar || defaultAvatar
+                    }
+                };
+                
+                // 执行导入
+                state.chats[completeChatData.id] = completeChatData;
+                
+                // 保存到数据库
+                await db.chats.put(completeChatData);
+                
+                // 设置为导入的聊天为当前活跃聊天
+                state.activeChatId = completeChatData.id;
+                
+                // 刷新聊天列表
+                renderChatList();
+                
+                // 刷新聊天界面（如果当前聊天是导入的聊天）
+                if (state.activeChatId === completeChatData.id) {
+                    try {
+                        renderChatInterface(completeChatData.id);
+                    } catch (error) {
+                        console.warn('刷新聊天界面时出错:', error);
+                    }
+                }
+                
+                await showCustomAlert('成功', `聊天记录"${chatData.name}"导入成功！`);
+                
+            } catch (parseError) {
+                console.error('解析导入文件失败:', parseError);
+                await showCustomAlert('错误', `导入失败：${parseError.message}\n\n请确保文件格式正确。`);
+            } finally {
+                // 清理文件输入
+                if (fileInput.parentNode) {
+                    document.body.removeChild(fileInput);
+                }
+            }
+        });
+        
+        // 添加到页面并触发选择
+        document.body.appendChild(fileInput);
+        fileInput.click();
+        
+    } catch (error) {
+        console.error('导入聊天记录失败:', error);
+        await showCustomAlert('错误', `导入失败：${error.message}`);
+    }
+}
+// ▲▲▲ 单独聊天记录导入导出功能结束 ▲▲▲
+
                // ===================================================================
                 // 4. 初始化函数 init()
                 // ===================================================================
@@ -26805,6 +27573,35 @@ document.getElementById('cleanup-data-btn').addEventListener('click', cleanupRed
                     document.getElementById('import-btn').addEventListener('click', () => document.getElementById('import-data-input').click());
                     document.getElementById('import-data-input').addEventListener('change', e => importBackup(e.target.files[0]));
                     document.getElementById('import-card-input').addEventListener('change', handleCardImport);
+                    
+                    // ▼▼▼ 动态发布功能事件绑定 ▼▼▼
+                    document.getElementById('post-upload-local-btn').addEventListener('click', () => {
+                        document.getElementById('post-local-image-input').click();
+                    });
+                    
+                    document.getElementById('post-local-image-input').addEventListener('change', (e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                const preview = document.getElementById('post-image-preview');
+                                const container = document.getElementById('post-image-preview-container');
+                                preview.src = e.target.result;
+                                container.style.display = 'block';
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                    
+                    document.getElementById('post-remove-image-btn').addEventListener('click', () => {
+                        const preview = document.getElementById('post-image-preview');
+                        const container = document.getElementById('post-image-preview-container');
+                        const input = document.getElementById('post-local-image-input');
+                        preview.src = '';
+                        container.style.display = 'none';
+                        input.value = '';
+                    });
+                    // ▲▲▲ 动态发布功能事件绑定结束 ▲▲▲
                     document.getElementById('back-to-list-btn').addEventListener('click', () => { 
 
             // ▼▼▼ 修改这两行 ▼▼▼
@@ -27042,8 +27839,35 @@ audioPlayer.addEventListener('play', () => {
             
             try {
                 let isGemini = url === GEMINI_API_URL;
-                const response = await fetch(isGemini ? `${GEMINI_API_URL}?key=${getRandomValue(key)}` : `${url}/v1/models`, isGemini ? undefined : { headers: { 'Authorization': `Bearer ${key}` } });
-                if (!response.ok) throw new Error('无法获取模型列表');
+                const targetUrl = isGemini ? `${GEMINI_API_URL}?key=${getRandomValue(key)}` : `${url}/v1/models`;
+                const fetchOptions = {
+                    method: 'GET',
+                    mode: 'cors', // 明确指定CORS模式
+                    headers: isGemini ? {} : { 'Authorization': `Bearer ${key}` }
+                };
+                
+                let response;
+                try {
+                    // 首先尝试直接请求
+                    response = await fetch(targetUrl, fetchOptions);
+                } catch (corsError) {
+                    // 如果CORS失败，尝试使用代理
+                    console.warn('直接请求失败，尝试使用CORS代理:', corsError.message);
+                    response = await fetchWithCorsProxy(targetUrl, fetchOptions);
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // 检查响应内容类型
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('服务器返回了非JSON响应:', text.substring(0, 200));
+                    throw new Error('服务器返回了非JSON响应，可能是错误页面或重定向');
+                }
+                
                 const data = await response.json();
                 let models = isGemini ? data.models.map(model => ({ id: model.name.split('/')[1] || model.name })) : data.data;
                 
@@ -27061,7 +27885,21 @@ audioPlayer.addEventListener('play', () => {
                 });
                 alert('模型列表已更新');
             } catch (error) {
-                alert(`拉取模型失败: ${error.message}`);
+                let errorMessage = error.message;
+                
+                // 特殊处理CORS错误
+                if (error.message.includes('CORS') || error.message.includes('Access-Control-Allow-Origin')) {
+                    errorMessage = 'CORS跨域错误：服务器不允许跨域请求。\n\n解决方案：\n1. 检查API地址是否正确\n2. 联系API提供商配置CORS\n3. 尝试使用不同的API服务';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = '网络请求失败：无法连接到API服务器。\n\n可能原因：\n1. 网络连接问题\n2. API服务器地址错误\n3. 服务器暂时不可用';
+                } else if (error.message.includes('ERR_FAILED')) {
+                    errorMessage = '网络错误：请求被阻止。\n\n建议：\n1. 检查API地址是否正确\n2. 确认网络连接正常\n3. 尝试刷新页面重试';
+                } else if (error.message.includes('非JSON响应')) {
+                    errorMessage = '服务器返回了错误页面而不是API数据。\n\n可能原因：\n1. API地址错误\n2. 服务器配置问题\n3. 需要认证\n\n建议：\n1. 检查API地址格式\n2. 确认API密钥正确\n3. 联系API提供商确认服务状态';
+                }
+                
+                alert(`拉取模型失败: ${errorMessage}`);
+                console.error('模型拉取详细错误:', error);
             }
         }
         
@@ -27659,6 +28497,12 @@ document.getElementById('chat-settings-screen').addEventListener('click', (e) =>
         const myFrameTab = document.getElementById('my-frame-tab');
         const aiFrameContent = document.getElementById('ai-frame-content');
         const myFrameContent = document.getElementById('my-frame-content');
+        
+        // 安全检查，确保元素存在
+        if (!frameModal || !aiFrameTab || !myFrameTab || !aiFrameContent || !myFrameContent) {
+            console.warn('某些头像框相关元素未找到，跳过头像框功能初始化');
+            return;
+        }
         
         // “保存”按钮
         document.getElementById('save-frame-settings-btn').addEventListener('click', saveSelectedFrames);
@@ -29457,6 +30301,11 @@ async function handlePostClick(e) {
         document.getElementById('import-json-btn').addEventListener('click', importJsonBeautification);
         // ▲▲▲ JSON导入导出功能事件绑定结束 ▲▲▲
         
+        // ▼▼▼ 【全新】单独聊天记录导入导出功能事件绑定 ▼▼▼
+        document.getElementById('export-single-chat-btn').addEventListener('click', exportSingleChat);
+        document.getElementById('import-single-chat-btn').addEventListener('click', importSingleChat);
+        // ▲▲▲ 单独聊天记录导入导出功能事件绑定结束 ▲▲▲
+        
         // ▼▼▼ 【全新】表情包面板事件绑定 ▼▼▼
         document.getElementById('open-sticker-panel-btn').addEventListener('click', () => {
             document.getElementById('sticker-panel').classList.add('visible');
@@ -30164,13 +31013,80 @@ if (placeholder) {
         // ▼▼▼ 气泡样式管理事件监听器 ▼▼▼
         document.getElementById('save-current-bubble-style-btn').addEventListener('click', saveCurrentBubbleStyle);
         document.getElementById('load-bubble-style-btn').addEventListener('click', () => {
-            const styleId = document.getElementById('saved-bubble-styles-select').value;
+            const styleId = getSavedBubbleStyleValue();
             loadBubbleStyle(styleId);
         });
         document.getElementById('delete-bubble-style-btn').addEventListener('click', () => {
-            const styleId = document.getElementById('saved-bubble-styles-select').value;
+            const styleId = getSavedBubbleStyleValue();
             deleteBubbleStyle(styleId);
         });
+        
+        // ▼▼▼ 【全新】气泡样式传统下拉选择框交互功能 ▼▼▼
+        function initBubbleStyleDropdown() {
+            const dropdownHeader = document.getElementById('saved-bubble-styles-dropdown');
+            const dropdownOptions = document.getElementById('bubble-styles-options');
+            const selectedText = document.getElementById('selected-style-text');
+            const dropdownArrow = document.getElementById('dropdown-arrow');
+            
+            if (!dropdownHeader || !dropdownOptions) return;
+            
+            // 点击下拉框头部时切换选项显示
+            dropdownHeader.addEventListener('click', () => {
+                const isVisible = dropdownOptions.classList.contains('visible');
+                if (isVisible) {
+                    dropdownOptions.classList.remove('visible');
+                    dropdownOptions.style.display = 'none';
+                    dropdownArrow.style.transform = 'rotate(0deg)';
+                } else {
+                    dropdownOptions.classList.add('visible');
+                    dropdownOptions.style.display = 'block';
+                    dropdownArrow.style.transform = 'rotate(180deg)';
+                }
+            });
+            
+            // 点击选项时选择该项
+            dropdownOptions.addEventListener('click', (e) => {
+                const option = e.target.closest('.dropdown-option');
+                if (option) {
+                    const value = option.dataset.value;
+                    const text = option.textContent;
+                    
+                    // 更新显示文本
+                    selectedText.textContent = text;
+                    selectedText.style.color = value ? '#c2185b' : '#d63384';
+                    
+                    // 存储选中的值
+                    dropdownHeader.dataset.value = value;
+                    
+                    // 关闭下拉选项
+                    dropdownOptions.classList.remove('visible');
+                    dropdownOptions.style.display = 'none';
+                    dropdownArrow.style.transform = 'rotate(0deg)';
+                }
+            });
+            
+            // 点击外部时关闭下拉选项
+            document.addEventListener('click', (e) => {
+                if (!dropdownHeader.contains(e.target) && !dropdownOptions.contains(e.target)) {
+                    dropdownOptions.classList.remove('visible');
+                    dropdownOptions.style.display = 'none';
+                    dropdownArrow.style.transform = 'rotate(0deg)';
+                }
+            });
+        }
+        
+        // 更新原有的气泡样式选择框的获取值方法
+        function getSavedBubbleStyleValue() {
+            const dropdownHeader = document.getElementById('saved-bubble-styles-dropdown');
+            return dropdownHeader ? dropdownHeader.dataset.value || '' : '';
+        }
+        
+        // 在页面加载完成后初始化下拉选择框
+        setTimeout(() => {
+            initBubbleStyleDropdown();
+        }, 300);
+        // ▲▲▲ 气泡样式传统下拉选择框功能结束 ▲▲▲
+        
         // ▲▲▲ 气泡样式管理事件监听器结束 ▲▲▲
         // ▼▼▼ 【最终修复版】请用这个全新的事件监听器，替换旧的长期记忆功能事件绑定 ▼▼▼
         // 聊天界面顶部新按钮 -> 打开全屏页面
@@ -31266,7 +32182,7 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                 // ▼▼▼ 气泡样式管理函数 ▼▼▼
                 
                 /**
-                 * 保存当前气泡样式
+                 * 保存当前气泡样式 - 移动设备兼容版本
                  */
                 async function saveCurrentBubbleStyle() {
                     const styleName = document.getElementById('bubble-style-name-input').value.trim();
@@ -31302,28 +32218,59 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                         
                         console.log('保存的气泡样式数据:', bubbleStyle);
                         
-                        // 使用put而不是add，避免重复键错误
-                        await db.bubbleStyles.put(bubbleStyle);
+                        // 【简化】直接使用localStorage保存
+                        try {
+                            console.log('准备保存到localStorage:', bubbleStyle);
+                            
+                            const existingStyles = JSON.parse(localStorage.getItem('bubbleStyles') || '[]');
+                            const existingIndex = existingStyles.findIndex(s => s.name === styleName);
+                            
+                            if (existingIndex >= 0) {
+                                existingStyles[existingIndex] = bubbleStyle;
+                                console.log('更新现有样式:', styleName);
+                            } else {
+                                existingStyles.push(bubbleStyle);
+                                console.log('添加新样式:', styleName);
+                            }
+                            
+                            localStorage.setItem('bubbleStyles', JSON.stringify(existingStyles));
+                            console.log('localStorage保存成功，共', existingStyles.length, '个样式');
+                            
+                        } catch (error) {
+                            console.error('localStorage保存失败:', error);
+                            throw new Error('存储失败：' + error.message);
+                        }
                         
                         // 同时更新当前聊天的设置
                         chat.settings.customCss = currentCustomCss;
-                        await db.chats.put(chat);
+                        
+                        // 保存聊天设置
+                        try {
+                            await db.chats.put(chat);
+                        } catch (chatError) {
+                            console.warn('聊天设置保存失败，但气泡样式已保存:', chatError);
+                        }
                         
                         // 强制更新选择列表
                         setTimeout(async () => {
-                            await updateBubbleSelects();
-                            document.getElementById('bubble-style-name-input').value = '';
-                            await showCustomAlert('成功', `已保存气泡样式：${styleName}`);
+                            try {
+                                await updateBubbleSelects();
+                                document.getElementById('bubble-style-name-input').value = '';
+                                await showCustomAlert('成功', `已保存气泡样式：${styleName}`);
+                            } catch (updateError) {
+                                console.error('更新选择列表失败:', updateError);
+                                await showCustomAlert('成功', `气泡样式已保存：${styleName}，但界面更新失败`);
+                            }
                         }, 100);
                         
                     } catch (error) {
                         console.error('保存气泡样式失败:', error);
-                        await showCustomAlert('错误', '保存失败，请重试');
+                        await showCustomAlert('错误', `保存失败：${error.message || '未知错误'}，请重试`);
                     }
                 }
 
                 /**
-                 * 加载气泡样式
+                 * 加载气泡样式 - 移动设备兼容版本
                  */
                 async function loadBubbleStyle(styleId) {
                     try {
@@ -31334,58 +32281,80 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                             return;
                         }
                         
-                        // 尝试将 styleId 转换为数字
-                        const numericStyleId = parseInt(styleId);
-                        console.log('转换后的数字ID:', numericStyleId);
+                        let bubbleStyle = null;
                         
-                        let bubbleStyle;
-                        if (isNaN(numericStyleId)) {
-                            // 如果不是数字，尝试按名称查找
-                            console.log('按名称查找样式:', styleId);
-                            bubbleStyle = await db.bubbleStyles.where('name').equals(styleId).first();
-                        } else {
-                            // 如果是数字，按ID查找
-                            bubbleStyle = await db.bubbleStyles.get(numericStyleId);
+                        // 【简化】直接使用localStorage加载
+                        try {
+                            console.log('尝试从localStorage加载样式:', styleId);
+                            
+                            const existingStyles = JSON.parse(localStorage.getItem('bubbleStyles') || '[]');
+                            bubbleStyle = existingStyles.find(s => s.name === styleId || s.id === styleId);
+                            console.log('从localStorage获取的样式:', bubbleStyle);
+                        } catch (localError) {
+                            console.error('localStorage加载失败:', localError);
+                            throw new Error('加载失败：' + localError.message);
                         }
-                        console.log('从数据库获取的样式:', bubbleStyle);
                         
                         if (!bubbleStyle) {
                             await showCustomAlert('错误', '样式不存在');
                             return;
                         }
                         
-                        const settings = JSON.parse(bubbleStyle.style);
+                        // 处理不同的数据格式
+                        let cssContent = '';
+                        let settings = null;
+                        
+                        if (bubbleStyle.style) {
+                            // 旧格式：style字段包含JSON字符串
+                            try {
+                                settings = JSON.parse(bubbleStyle.style);
+                                cssContent = settings.customCss || '';
+                            } catch (parseError) {
+                                console.error('解析style字段失败:', parseError);
+                                cssContent = '';
+                            }
+                        } else if (bubbleStyle.css) {
+                            // 新格式：直接使用css字段
+                            cssContent = bubbleStyle.css;
+                        } else {
+                            console.log('该样式没有CSS内容');
+                            await showCustomAlert('错误', '该样式没有CSS内容');
+                            return;
+                        }
+                        
                         const chat = state.chats[state.activeChatId];
                         if (!chat) return;
                         
                         // 应用气泡样式并保存到当前聊天设置
-                        if (settings.customCss) {
+                        if (cssContent) {
                             console.log('准备应用气泡样式:', bubbleStyle.name);
-                            console.log('CSS内容长度:', settings.customCss.length);
-                            applyBubbleStyle(settings.customCss);
+                            console.log('CSS内容长度:', cssContent.length);
+                            applyBubbleStyle(cssContent);
                             
                             // 保存到当前聊天设置中
-                            chat.settings.customCss = settings.customCss;
+                            chat.settings.customCss = cssContent;
                             await db.chats.put(chat);
                         } else {
                             console.log('该样式没有自定义CSS内容');
                         }
                         
                         // 更新UI（只更新主题和字体大小，不覆盖自定义CSS）
-                        const themeRadio = document.querySelector(`input[name="theme-select"][value="${settings.theme}"]`);
-                        if (themeRadio) themeRadio.checked = true;
-                        
-                        const fontSizeSlider = document.getElementById('font-size-slider');
-                        if (fontSizeSlider) {
-                            fontSizeSlider.value = settings.fontSize;
-                            document.getElementById('font-size-value').textContent = `${settings.fontSize}px`;
+                        if (settings) {
+                            const themeRadio = document.querySelector(`input[name="theme-select"][value="${settings.theme}"]`);
+                            if (themeRadio) themeRadio.checked = true;
+                            
+                            const fontSizeSlider = document.getElementById('font-size-slider');
+                            if (fontSizeSlider) {
+                                fontSizeSlider.value = settings.fontSize;
+                                document.getElementById('font-size-value').textContent = `${settings.fontSize}px`;
+                            }
                         }
                         
                         // 更新自定义CSS输入框
                         const customCssInput = document.getElementById('custom-css-input');
                         if (customCssInput) {
-                            customCssInput.value = settings.customCss || '';
-                            console.log('已更新CSS输入框内容:', settings.customCss);
+                            customCssInput.value = cssContent || '';
+                            console.log('已更新CSS输入框内容:', cssContent);
                         }
                         
                         // 应用样式
@@ -31400,66 +32369,145 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                 }
 
                 /**
-                 * 删除气泡样式
+                 * 删除气泡样式 - 移动设备兼容版本
                  */
                 async function deleteBubbleStyle(styleId) {
                     try {
+                        console.log('尝试删除气泡样式，styleId:', styleId, '类型:', typeof styleId);
+                        
                         if (!styleId || styleId === '') {
                             await showCustomAlert('提示', '请先选择一个样式');
                             return;
                         }
                         
-                        // 确保 styleId 是数字
-                        const numericStyleId = parseInt(styleId);
-                        if (isNaN(numericStyleId)) {
-                            await showCustomAlert('错误', '无效的样式ID');
-                            return;
+                        let bubbleStyle = null;
+                        let deleteSuccess = false;
+                        
+                        // 【简化】直接使用localStorage删除
+                        try {
+                            console.log('尝试从localStorage删除样式:', styleId);
+                            
+                            const existingStyles = JSON.parse(localStorage.getItem('bubbleStyles') || '[]');
+                            console.log('localStorage中的样式:', existingStyles);
+                            
+                            const styleIndex = existingStyles.findIndex(s => {
+                                console.log('比较:', 's.name:', s.name, 's.id:', s.id, 'styleId:', styleId);
+                                return s.name === styleId || s.id == styleId || s.id === styleId.toString();
+                            });
+                            
+                            console.log('找到的样式索引:', styleIndex);
+                            
+                            if (styleIndex >= 0) {
+                                bubbleStyle = existingStyles[styleIndex];
+                                console.log('找到样式（localStorage）:', bubbleStyle);
+                                existingStyles.splice(styleIndex, 1);
+                                localStorage.setItem('bubbleStyles', JSON.stringify(existingStyles));
+                                deleteSuccess = true;
+                                console.log('localStorage删除成功，剩余', existingStyles.length, '个样式');
+                            } else {
+                                console.log('localStorage中未找到样式');
+                            }
+                        } catch (localError) {
+                            console.error('localStorage操作失败:', localError);
+                            throw new Error('删除失败：' + localError.message);
                         }
                         
-                        const bubbleStyle = await db.bubbleStyles.get(numericStyleId);
                         if (!bubbleStyle) {
                             await showCustomAlert('错误', '样式不存在');
                             return;
                         }
                         
                         const confirmed = await showCustomConfirm('确认删除', `确定要删除气泡样式"${bubbleStyle.name}"吗？`);
-                        if (!confirmed) return;
+                        if (!confirmed) {
+                            // 如果用户取消，需要恢复删除的样式
+                            try {
+                                const bubbleStyleToRestore = {
+                                    id: bubbleStyle.id,
+                                    name: bubbleStyle.name,
+                                    css: bubbleStyle.css,
+                                    description: bubbleStyle.description,
+                                    createdAt: bubbleStyle.createdAt,
+                                    updatedAt: bubbleStyle.updatedAt
+                                };
+                                
+                                // 尝试恢复到IndexedDB
+                                try {
+                                    await db.bubbleStyles.put(bubbleStyleToRestore);
+                                } catch (dbError) {
+                                    // 如果IndexedDB失败，恢复到localStorage
+                                    const existingStyles = JSON.parse(localStorage.getItem('bubbleStyles') || '[]');
+                                    existingStyles.push(bubbleStyleToRestore);
+                                    localStorage.setItem('bubbleStyles', JSON.stringify(existingStyles));
+                                }
+                            } catch (restoreError) {
+                                console.error('恢复样式失败:', restoreError);
+                            }
+                            return;
+                        }
                         
-                        await db.bubbleStyles.delete(numericStyleId);
+                        // 更新选择列表
                         await updateBubbleSelects();
                         
-                        await showCustomAlert('成功', '已删除气泡样式');
+                        await showCustomAlert('成功', `已删除气泡样式：${bubbleStyle.name}`);
                         
                     } catch (error) {
                         console.error('删除气泡样式失败:', error);
-                        await showCustomAlert('错误', '删除失败，请重试');
+                        await showCustomAlert('错误', `删除失败：${error.message || '未知错误'}，请重试`);
                     }
                 }
 
                 /**
-                 * 更新气泡样式选择列表
+                 * 更新气泡样式选择列表 - 移动设备兼容版本
                  */
                 async function updateBubbleSelects() {
                     try {
-                        // 使用each方法而不是toArray，避免Promise卡住
-                        const savedSelect = document.getElementById('saved-bubble-styles-select');
-                        if (!savedSelect) return;
+                        // 使用新的下拉选择框结构
+                        const dropdownOptions = document.getElementById('bubble-styles-options');
+                        if (!dropdownOptions) return;
                         
-                        // 清空现有选项
-                        savedSelect.innerHTML = '<option value="">-- 选择保存的气泡样式 --</option>';
+                        // 清空现有选项，保留默认选项
+                        dropdownOptions.innerHTML = `<div class="dropdown-option" data-value="" style="
+                            padding: 12px 15px; 
+                            cursor: pointer; 
+                            color: #d63384; 
+                            font-weight: 500;
+                            transition: all 0.2s ease;
+                            border-radius: 8px;
+                            margin: 4px 8px;
+                        ">-- 选择保存的气泡样式 --</div>`;
                         
-                        // 使用each方法遍历
-                        await db.bubbleStyles.each(bubble => {
-                            if (bubble && bubble.id && bubble.name) {
-                                const option = document.createElement('option');
-                                option.value = bubble.id;
-                                option.textContent = bubble.name;
-                                console.log('添加选项:', 'ID:', bubble.id, '名称:', bubble.name);
-                                savedSelect.appendChild(option);
-                            }
+                        let styles = [];
+                        
+                        // 【简化】直接使用localStorage加载
+                        try {
+                            const existingStyles = JSON.parse(localStorage.getItem('bubbleStyles') || '[]');
+                            styles = existingStyles.filter(s => s && s.name);
+                            console.log('从localStorage加载了', styles.length, '个样式');
+                        } catch (localError) {
+                            console.error('localStorage加载失败:', localError);
+                            throw new Error('加载失败：' + localError.message);
+                        }
+                        
+                        // 添加样式选项
+                        styles.forEach(bubble => {
+                            const option = document.createElement('div');
+                            option.className = 'dropdown-option';
+                            option.dataset.value = bubble.id || bubble.name;
+                            option.textContent = bubble.name;
+                            option.style.cssText = `
+                                padding: 12px 15px; 
+                                cursor: pointer; 
+                                color: #d63384; 
+                                font-weight: 500;
+                                transition: all 0.2s ease;
+                                border-radius: 8px;
+                                margin: 4px 8px;
+                            `;
+                            console.log('添加选项:', 'ID:', bubble.id, '名称:', bubble.name);
+                            dropdownOptions.appendChild(option);
                         });
                         
-                        console.log('已更新气泡样式列表');
+                        console.log('已更新气泡样式列表，共', styles.length, '个样式');
                     } catch (error) {
                         console.error('更新气泡选择列表失败:', error);
                     }
@@ -31482,6 +32530,261 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                     document.head.appendChild(styleElement);
                     
                     console.log('已应用气泡样式:', cssCode.substring(0, 100) + '...');
+                }
+
+                /**
+                 * 导出CSS气泡样式
+                 */
+                async function exportCssBubble() {
+                    try {
+                        const customCssInput = document.getElementById('custom-css-input');
+                        const cssContent = customCssInput ? customCssInput.value.trim() : '';
+                        
+                        if (!cssContent) {
+                            await showCustomAlert('提示', '当前没有CSS样式内容可导出');
+                            return;
+                        }
+                        
+                        // 获取当前选中的样式名称
+                        let styleName = '导出的气泡样式';
+                        const selectedStyleText = document.getElementById('selected-style-text');
+                        if (selectedStyleText && selectedStyleText.textContent !== '-- 选择保存的气泡样式 --') {
+                            styleName = selectedStyleText.textContent;
+                        }
+                        
+                        // 如果当前没有选中样式，尝试从输入框获取名称
+                        if (styleName === '导出的气泡样式') {
+                            const nameInput = document.getElementById('bubble-style-name-input');
+                            if (nameInput && nameInput.value.trim()) {
+                                styleName = nameInput.value.trim();
+                            }
+                        }
+                        
+                        // 创建导出数据
+                        const exportData = {
+                            type: 'bubble_css_style',
+                            version: '1.0',
+                            name: styleName,
+                            css: cssContent,
+                            exportTime: new Date().toISOString(),
+                            description: '从聊天气泡CSS导出的样式文件'
+                        };
+                        
+                        // 创建下载链接
+                        const dataStr = JSON.stringify(exportData, null, 2);
+                        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                        
+                        // 使用样式名称作为文件名，清理特殊字符
+                        const cleanFileName = styleName.replace(/[<>:"/\\|?*]/g, '_').replace(/\s+/g, '_');
+                        const exportFileDefaultName = `${cleanFileName}.json`;
+                        
+                        // 创建下载元素
+                        const linkElement = document.createElement('a');
+                        linkElement.setAttribute('href', dataUri);
+                        linkElement.setAttribute('download', exportFileDefaultName);
+                        linkElement.click();
+                        
+                        await showCustomAlert('成功', `CSS气泡样式"${styleName}"已导出到下载文件夹`);
+                        
+                    } catch (error) {
+                        console.error('导出CSS气泡样式失败:', error);
+                        await showCustomAlert('错误', `导出失败：${error.message}`);
+                    }
+                }
+
+                /**
+                 * 导入CSS气泡样式
+                 */
+                async function importCssBubble() {
+                    try {
+                        // 创建文件选择器
+                        const input = document.createElement('input');
+                        input.type = 'file';
+                        input.accept = '.json';
+                        input.style.display = 'none';
+                        
+                        input.onchange = async (event) => {
+                            const file = event.target.files[0];
+                            if (!file) {
+                                console.log('用户取消了文件选择');
+                                return;
+                            }
+                            
+                            console.log('开始导入文件:', file.name, '大小:', file.size);
+                            
+                            try {
+                                const text = await file.text();
+                                console.log('文件内容长度:', text.length);
+                                console.log('文件内容预览:', text.substring(0, 200) + '...');
+                                
+                                const importData = JSON.parse(text);
+                                console.log('解析后的数据:', importData);
+                                
+                                // 验证文件格式 - 更宽松的验证
+                                if (importData.type && importData.type !== 'bubble_css_style') {
+                                    console.warn('文件类型不匹配，但尝试继续导入:', importData.type);
+                                }
+                                
+                                // 检查CSS内容
+                                let cssContent = '';
+                                if (importData.css) {
+                                    cssContent = importData.css;
+                                } else if (importData.customCss) {
+                                    cssContent = importData.customCss;
+                                } else if (typeof importData === 'string') {
+                                    // 如果整个文件就是CSS字符串
+                                    cssContent = importData;
+                                } else {
+                                    throw new Error('文件中没有找到CSS样式内容。请确保文件包含css字段。');
+                                }
+                                
+                                if (!cssContent || cssContent.trim() === '') {
+                                    throw new Error('CSS内容为空');
+                                }
+                                
+                                console.log('找到CSS内容，长度:', cssContent.length);
+                                
+                                // 应用导入的CSS
+                                const customCssInput = document.getElementById('custom-css-input');
+                                if (customCssInput) {
+                                    customCssInput.value = cssContent;
+                                    
+                                    // 应用样式
+                                    applyBubbleStyle(cssContent);
+                                    
+                                    // 更新当前聊天设置
+                                    const chat = state.chats[state.activeChatId];
+                                    if (chat) {
+                                        chat.settings.customCss = cssContent;
+                                        
+                                        try {
+                                            await db.chats.put(chat);
+                                            console.log('聊天设置已保存');
+                                        } catch (dbError) {
+                                            console.warn('保存聊天设置失败:', dbError);
+                                        }
+                                    }
+                                    
+                                    // 【新增】保存到气泡样式库
+                                    // 优先使用文件名作为样式名称，去掉扩展名
+                                    let styleName = file.name.replace(/\.[^/.]+$/, ''); // 去掉文件扩展名
+                                    if (!styleName || styleName.trim() === '') {
+                                        styleName = importData.name || importData.styleName || `导入样式_${new Date().getTime()}`;
+                                    }
+                                    
+                                    // 【修复】检查是否已存在同名样式
+                                    let existingStyle = null;
+                                    try {
+                                        // 先检查IndexedDB中是否存在同名样式
+                                        existingStyle = await db.bubbleStyles.where('name').equals(styleName).first();
+                                        console.log('检查到同名样式:', existingStyle);
+                                    } catch (dbError) {
+                                        console.warn('检查同名样式失败:', dbError);
+                                    }
+                                    
+                                    // 如果存在同名样式，询问用户是否覆盖
+                                    if (existingStyle) {
+                                        const confirmed = await showCustomConfirm(
+                                            '样式已存在',
+                                            `样式"${styleName}"已存在，是否要覆盖？\n\n原样式创建时间：${new Date(existingStyle.createdAt).toLocaleString()}`,
+                                            { confirmButtonClass: 'btn-warning', confirmText: '覆盖' }
+                                        );
+                                        
+                                        if (!confirmed) {
+                                            // 用户取消，生成新名称
+                                            styleName = `${styleName}_${new Date().getTime()}`;
+                                            console.log('用户取消覆盖，使用新名称:', styleName);
+                                        } else {
+                                            // 用户确认覆盖，先删除旧样式
+                                            try {
+                                                await db.bubbleStyles.delete(existingStyle.id);
+                                                console.log('已删除旧样式:', existingStyle.name, 'ID:', existingStyle.id);
+                                            } catch (deleteError) {
+                                                console.warn('删除旧样式失败:', deleteError);
+                                            }
+                                        }
+                                    }
+                                    
+                                    try {
+                                        // 创建气泡样式对象，使用更可靠的ID生成方式
+                                        const bubbleStyle = {
+                                            id: `style_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+                                            name: styleName,
+                                            css: cssContent,
+                                            description: importData.description || '从文件导入的气泡样式',
+                                            createdAt: Date.now(),
+                                            updatedAt: Date.now()
+                                        };
+                                        
+                                        // 【简化】直接使用localStorage保存
+                                        try {
+                                            console.log('准备保存到localStorage:', bubbleStyle);
+                                            
+                                            const existingStyles = JSON.parse(localStorage.getItem('bubbleStyles') || '[]');
+                                            const existingIndex = existingStyles.findIndex(s => s.name === styleName);
+                                            
+                                            if (existingIndex >= 0) {
+                                                existingStyles[existingIndex] = bubbleStyle;
+                                                console.log('更新现有样式:', styleName);
+                                            } else {
+                                                existingStyles.push(bubbleStyle);
+                                                console.log('添加新样式:', styleName);
+                                            }
+                                            
+                                            localStorage.setItem('bubbleStyles', JSON.stringify(existingStyles));
+                                            console.log('localStorage保存成功，共', existingStyles.length, '个样式');
+                                            
+                                            // 验证保存
+                                            const savedStyles = JSON.parse(localStorage.getItem('bubbleStyles') || '[]');
+                                            console.log('验证保存结果，当前样式数量:', savedStyles.length);
+                                            
+                                        } catch (error) {
+                                            console.error('localStorage保存失败:', error);
+                                            throw new Error('存储失败：' + error.message);
+                                        }
+                                        
+                                        // 更新气泡样式选择列表
+                                        setTimeout(async () => {
+                                            try {
+                                                await updateBubbleSelects();
+                                                console.log('气泡样式列表已更新');
+                                            } catch (updateError) {
+                                                console.error('更新选择列表失败:', updateError);
+                                            }
+                                        }, 100);
+                                        
+                                        await showCustomAlert('成功', `已导入气泡样式：${styleName}\n\n样式已保存到气泡样式库，可以在下拉菜单中选择使用。`);
+                                        
+                                    } catch (saveError) {
+                                        console.error('保存到气泡样式库失败:', saveError);
+                                        await showCustomAlert('成功', `已导入气泡样式：${styleName}\n\nCSS内容已应用到当前聊天，但保存到样式库失败：${saveError.message}`);
+                                    }
+                                    
+                                } else {
+                                    throw new Error('找不到CSS输入框');
+                                }
+                                
+                            } catch (parseError) {
+                                console.error('解析导入文件失败:', parseError);
+                                console.error('错误详情:', parseError.message);
+                                console.error('文件内容:', text.substring(0, 500));
+                                await showCustomAlert('错误', `导入失败：${parseError.message}\n\n请检查文件格式是否正确。`);
+                            } finally {
+                                // 清理文件输入
+                                if (input.parentNode) {
+                                    document.body.removeChild(input);
+                                }
+                            }
+                        };
+                        
+                        // 添加到页面并触发点击
+                        document.body.appendChild(input);
+                        input.click();
+                        
+                    } catch (error) {
+                        console.error('导入CSS气泡样式失败:', error);
+                        await showCustomAlert('错误', `导入失败：${error.message}`);
+                    }
                 }
                 
                 /**
@@ -31638,8 +32941,57 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                 window.loadBubbleStyle = loadBubbleStyle;
                 window.deleteBubbleStyle = deleteBubbleStyle;
                 window.applyBubbleStyle = applyBubbleStyle;
+                window.exportCssBubble = exportCssBubble;
+                window.importCssBubble = importCssBubble;
+                
+                // 【调试功能】查看所有气泡样式
+                window.debugBubbleStyles = async function() {
+                    console.log('=== 调试气泡样式 ===');
+                    try {
+                        const allStyles = [];
+                        await db.bubbleStyles.each(style => {
+                            allStyles.push(style);
+                        });
+                        console.log('IndexedDB中的所有样式:', allStyles);
+                        console.log('localStorage中的样式:', JSON.parse(localStorage.getItem('bubbleStyles') || '[]'));
+                        return allStyles;
+                    } catch (error) {
+                        console.error('调试失败:', error);
+                    }
+                };
+                
+                // 【紧急删除功能】强制删除指定样式
+                window.forceDeleteBubbleStyle = async function(styleName) {
+                    try {
+                        console.log('强制删除样式:', styleName);
+                        
+                        // 1. 从IndexedDB删除
+                        const styles = await db.bubbleStyles.where('name').equals(styleName).toArray();
+                        for (const style of styles) {
+                            await db.bubbleStyles.delete(style.id);
+                            console.log('从IndexedDB删除:', style.name, 'ID:', style.id);
+                        }
+                        
+                        // 2. 从localStorage删除
+                        const localStyles = JSON.parse(localStorage.getItem('bubbleStyles') || '[]');
+                        const filteredStyles = localStyles.filter(s => s.name !== styleName);
+                        localStorage.setItem('bubbleStyles', JSON.stringify(filteredStyles));
+                        console.log('从localStorage删除:', styleName);
+                        
+                        // 3. 更新列表
+                        await updateBubbleSelects();
+                        
+                        await showCustomAlert('成功', `已强制删除样式：${styleName}`);
+                    } catch (error) {
+                        console.error('强制删除失败:', error);
+                        await showCustomAlert('错误', `强制删除失败：${error.message}`);
+                    }
+                };
                 window.clearBubbleStyle = clearBubbleStyle;
                 window.db = db;
+                
+                // 【简化修复】直接使用localStorage作为主要存储方式
+                console.log('使用localStorage作为气泡样式的主要存储方式');
                 
                 // ▲▲▲ 气泡样式管理函数结束 ▲▲▲
                 
@@ -32050,6 +33402,10 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
                 
                 // ▲▲▲ JSON配置列表管理函数结束 ▲▲▲
         
+                // 绑定导出导入气泡样式按钮
+                document.getElementById('export-css-bubble-btn')?.addEventListener('click', exportCssBubble);
+                document.getElementById('import-css-bubble-btn')?.addEventListener('click', importCssBubble);
+                
                 init();
             });
         
@@ -32103,22 +33459,157 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
         </div>
     </div>
 
-    <!-- “心声”卡片的新结构 -->
-    <div class="profile-section heart-voice">
+    <!-- "心声"卡片的新结构 -->
+    <div class="profile-section heart-voice collapsed">
         <div class="profile-section-header">
             <span class="profile-section-icon">💭</span>
             <label>心声</label>
+            <button class="profile-section-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
         </div>
-        <p id="profile-heartfelt-voice"></p>
+        <div class="profile-section-content">
+            <p id="profile-heartfelt-voice"></p>
+        </div>
     </div>
 
-    <!-- “散记”卡片的新结构 -->
-    <div class="profile-section random-jottings">
+    <!-- "散记"卡片的新结构 -->
+    <div class="profile-section random-jottings collapsed">
         <div class="profile-section-header">
             <span class="profile-section-icon">📌</span>
             <label>散记</label>
+            <button class="profile-section-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
         </div>
-        <p id="profile-random-jottings"></p>
+        <div class="profile-section-content">
+            <p id="profile-random-jottings"></p>
+        </div>
+    </div>
+
+    <!-- 新增的心声内容字段 -->
+    <div class="profile-section desires collapsed">
+        <div class="profile-section-header">
+            <span class="profile-section-icon">🔥</span>
+            <label>欲望</label>
+            <button class="profile-section-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="profile-section-content">
+            <p id="profile-desires"></p>
+        </div>
+    </div>
+
+    <div class="profile-section clothing collapsed">
+        <div class="profile-section-header">
+            <span class="profile-section-icon">👗</span>
+            <label>衣着</label>
+            <button class="profile-section-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="profile-section-content">
+            <p id="profile-clothing"></p>
+        </div>
+    </div>
+
+    <div class="profile-section posture collapsed">
+        <div class="profile-section-header">
+            <span class="profile-section-icon">🧘</span>
+            <label>姿势</label>
+            <button class="profile-section-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="profile-section-content">
+            <p id="profile-posture"></p>
+        </div>
+    </div>
+
+    <div class="profile-section specific-actions collapsed">
+        <div class="profile-section-header">
+            <span class="profile-section-icon">🎬</span>
+            <label>具体动作</label>
+            <button class="profile-section-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="profile-section-content">
+            <p id="profile-specific-actions"></p>
+        </div>
+    </div>
+
+    <div class="profile-section phone-activity collapsed">
+        <div class="profile-section-header">
+            <span class="profile-section-icon">📱</span>
+            <label>手机操作</label>
+            <button class="profile-section-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="profile-section-content">
+            <p id="profile-phone-activity"></p>
+        </div>
+    </div>
+
+    <div class="profile-section viewing-content collapsed">
+        <div class="profile-section-header">
+            <span class="profile-section-icon">👀</span>
+            <label>观看内容</label>
+            <button class="profile-section-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="profile-section-content">
+            <p id="profile-viewing-content"></p>
+        </div>
+    </div>
+
+    <div class="profile-section activity-status collapsed">
+        <div class="profile-section-header">
+            <span class="profile-section-icon">⚡</span>
+            <label>活动状态</label>
+            <button class="profile-section-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="profile-section-content">
+            <p id="profile-activity-status"></p>
+        </div>
+    </div>
+
+    <div class="profile-section genital-status collapsed">
+        <div class="profile-section-header">
+            <span class="profile-section-icon">🔞</span>
+            <label>阳具情况</label>
+            <button class="profile-section-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                </svg>
+            </button>
+        </div>
+        <div class="profile-section-content">
+            <p id="profile-genital-status"></p>
+        </div>
     </div>
 </div>
 <!-- ▲▲▲ 替换结束 ▲▲▲ -->
@@ -32267,5 +33758,126 @@ document.getElementById('status-bar-toggle-switch').addEventListener('change', (
     </div>
 </div>
 <!-- ▲▲▲ 字体批量导入模态框结束 ▲▲▲ -->
+
+<script>
+/**
+ * 【全新】卡片展开/收起交互功能
+ */
+function initProfileSectionInteractions() {
+    // 为所有卡片添加点击事件
+    const profileSections = document.querySelectorAll('.profile-section');
+    
+    profileSections.forEach(section => {
+        const toggleBtn = section.querySelector('.profile-section-toggle');
+        
+        if (toggleBtn) {
+            // 点击按钮时切换展开/收起状态
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // 阻止事件冒泡
+                toggleProfileSection(section);
+            });
+        }
+        
+        // 点击整个卡片也可以切换状态
+        section.addEventListener('click', () => {
+            toggleProfileSection(section);
+        });
+    });
+}
+
+/**
+ * 切换卡片展开/收起状态
+ * @param {HTMLElement} section - 卡片元素
+ */
+function toggleProfileSection(section) {
+    const isCollapsed = section.classList.contains('collapsed');
+    
+    if (isCollapsed) {
+        // 展开卡片
+        section.classList.remove('collapsed');
+        section.classList.add('expanded');
+    } else {
+        // 收起卡片
+        section.classList.remove('expanded');
+        section.classList.add('collapsed');
+    }
+}
+
+/**
+ * 初始化所有交互功能
+ */
+function initAllInteractions() {
+    initProfileSectionInteractions();
+}
+
+// 页面加载完成后初始化交互功能
+document.addEventListener('DOMContentLoaded', initAllInteractions);
+
+/**
+ * 【移动设备调试】检测设备类型和存储支持
+ */
+function detectDeviceAndStorage() {
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const isAndroid = /Android/.test(navigator.userAgent);
+    
+    console.log('=== 设备检测 ===');
+    console.log('用户代理:', navigator.userAgent);
+    console.log('是否移动设备:', isMobile);
+    console.log('是否iOS:', isIOS);
+    console.log('是否Android:', isAndroid);
+    
+    // 检测存储支持
+    const localStorageSupported = (() => {
+        try {
+            localStorage.setItem('test', 'test');
+            localStorage.removeItem('test');
+            return true;
+        } catch (e) {
+            return false;
+        }
+    })();
+    
+    const indexedDBSupported = 'indexedDB' in window;
+    
+    console.log('=== 存储支持检测 ===');
+    console.log('localStorage支持:', localStorageSupported);
+    console.log('IndexedDB支持:', indexedDBSupported);
+    
+    // 在页面上显示调试信息（仅在开发环境）
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        const debugInfo = document.createElement('div');
+        debugInfo.style.cssText = `
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            z-index: 9999;
+            max-width: 200px;
+        `;
+        debugInfo.innerHTML = `
+            <div>设备: ${isMobile ? '移动' : '桌面'}</div>
+            <div>系统: ${isIOS ? 'iOS' : isAndroid ? 'Android' : '其他'}</div>
+            <div>localStorage: ${localStorageSupported ? '✓' : '✗'}</div>
+            <div>IndexedDB: ${indexedDBSupported ? '✓' : '✗'}</div>
+        `;
+        document.body.appendChild(debugInfo);
+        
+        // 5秒后自动隐藏
+        setTimeout(() => {
+            if (debugInfo.parentNode) {
+                debugInfo.parentNode.removeChild(debugInfo);
+            }
+        }, 5000);
+    }
+}
+
+// 页面加载时检测设备
+document.addEventListener('DOMContentLoaded', detectDeviceAndStorage);
+
 </body>
 </html>
